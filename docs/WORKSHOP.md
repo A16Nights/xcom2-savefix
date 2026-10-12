@@ -6,6 +6,11 @@ is built and published, and what the constraints are.
 The short version: the Workshop is used as a **distribution page for a tool**,
 not as a mod. The game never loads the item. It carries no game files.
 
+**Status: published.** The item is live at
+<https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374>
+(id `3818684374`, public). The upload was done with SteamCMD, as described
+under [Two ways to upload](#two-ways-to-upload) below.
+
 ---
 
 ## Why the Workshop, and why not as a normal mod

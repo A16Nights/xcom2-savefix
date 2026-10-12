@@ -1,5 +1,5 @@
 [mod]
-publishedFileId=0
+publishedFileId=3818684374
 Title=[WOTC] Savefix - Beyond 65535
 Description=Raise the save-header limit so XCOM 2 can read saves from heavily modded campaigns.
 

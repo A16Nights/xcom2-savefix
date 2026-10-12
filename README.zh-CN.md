@@ -156,9 +156,13 @@ README.zh-CN.md           本文件
 DISCLAIMER.md             法律声明
 ```
 
-`workshop/` 存放发布到 Steam 创意工坊的条目文件（**[WOTC] Savefix — Beyond 65535**）。
+`workshop/` 存放发布到 Steam 创意工坊的条目文件（**[WOTC] Savefix — Beyond 65535**）：
+
+> https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
+
 工坊条目内附的是 PowerShell 版工具，订阅者拿它去改自己机器上的可执行文件，
-因此条目本身**不含任何游戏文件**。
+因此条目本身**不含任何游戏文件**。`workshop_build.vdf` 里填的是该条目的真实 id，
+所以再跑一次 SteamCMD 是**更新**它，而不会新建第二个条目。
 
 ## 相关工作
 

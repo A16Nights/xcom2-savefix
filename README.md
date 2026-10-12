@@ -176,9 +176,14 @@ DISCLAIMER.md             legal notice
 ```
 
 `workshop/` holds the files published to the Steam Workshop as
-**[WOTC] Savefix — Beyond 65535**. The Workshop item ships the PowerShell
-tool; subscribers run it against their own executable, so the item contains no
-game files at all.
+**[WOTC] Savefix — Beyond 65535**:
+
+> https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
+
+The Workshop item ships the PowerShell tool; subscribers run it against their
+own executable, so the item contains no game files at all. `workshop_build.vdf`
+carries the live item id, so re-running SteamCMD updates that item rather than
+creating a second one.
 
 ## Related work
 

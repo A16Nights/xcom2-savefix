@@ -25,6 +25,19 @@ First public release.
 * `docs/TECHNICAL.md` — full reverse-engineering write-up with disassembly and
   the evidence trail
 * `docs/SAVE_FORMAT.md` — observed save-header layout
+* `tools/SaveFix.ps1` — the same patch tool in PowerShell 5.1, so Windows users
+  need neither Python nor any download
+* `workshop/` — Steam Workshop item: manifest, ReadMe, launcher, preview image,
+  and the SteamCMD upload config
+* `docs/WORKSHOP.md` — why the Workshop item is a tool rather than a loadable
+  mod, what the item must contain, and the two upload routes
+
+### Published
+
+* Steam Workshop item **[WOTC] Savefix — Beyond 65535**, id `3818684374`:
+  https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
+  The item ships the PowerShell tool; subscribers run it against their own
+  executable, so the item contains no game files.
 
 ### Verified
 

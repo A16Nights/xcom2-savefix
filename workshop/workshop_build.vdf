@@ -10,6 +10,11 @@
 //   publishedfileid "0"      -> creates a NEW workshop item
 //   publishedfileid "<id>"   -> updates that existing item
 //
+// PUBLISHED: this item is live as
+//   https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
+// The id below is the real one, so running the command updates that item.
+// Set it back to "0" only when starting a brand new item.
+//
 // The second "contentfolder" path is this repository's workshop-package
 // folder: the .XComMod, ReadMe.txt, SaveFix.bat and SaveFix.ps1 that ship to
 // subscribers. Note that SteamCMD uploads whole files only - it does not
@@ -18,7 +23,7 @@
 "workshopitem"
 {
     "appid"             "268500"
-    "publishedfileid"   "0"
+    "publishedfileid"   "3818684374"
     "contentfolder"     "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package"
     "previewfile"       "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package\\ModPreview.jpg"
     "visibility"        "0"
