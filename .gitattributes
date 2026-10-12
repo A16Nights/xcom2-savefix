@@ -1,0 +1,13 @@
+# Normalise line endings so the repository stays consistent across platforms.
+# Git stores LF in the repository; working trees get the platform default.
+* text=auto eol=lf
+
+# Explicit, for clarity
+*.py   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+
+# Never touch binaries (none should be committed, but be safe)
+*.exe  binary
+*.dll  binary
+*.upk  binary

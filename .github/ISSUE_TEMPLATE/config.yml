@@ -1,0 +1,6 @@
+# Blank issues are fine too — but choosing a template gets your report read faster.
+blank_issues_enabled: true
+contact_links:
+  - name: Question about the analysis
+    url: https://github.com/<OWNER>/<REPO>/discussions
+    about: For "how did you find this?" and general discussion, rather than bug reports.

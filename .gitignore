@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# This project must never ship game files or personal data.
+# Keep them out of the repository even if they are copied here by accident.
+*.exe
+*.dll
+*.upk
+*.umap
+*.tfc
+*.bak
+*.pdb
+save_*
+XComGame/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
