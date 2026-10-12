@@ -39,6 +39,17 @@ one that ships a binary, and it proves the format works.
 
 ---
 
+## Layout
+
+```
+workshop/item/            what subscribers receive - the upload source
+workshop/workshop_build.vdf   SteamCMD config pointing at workshop/item/
+workshop/make_preview.py  regenerates item/ModPreview.jpg (needs Pillow)
+```
+
+Only `workshop/item/` is uploaded. Everything else sits beside it, so nothing
+development-only can leak into the item by being in the same folder.
+
 ## What the item must contain
 
 | File | Required | Purpose |
@@ -49,14 +60,13 @@ one that ships a binary, and it proves the format works.
 | `SaveFix.bat` | — | Double-click launcher, sets execution policy for one run. |
 | `SaveFix.ps1` | — | The tool itself. Plain text, readable by subscribers. |
 | `LICENSE` | — | MIT, so the terms travel with the download. |
-| `workshop_build.vdf` | dev only | Config for re-publishing via `steamcmd`. |
 
 `ModPreview.jpg` is **not** in version control as a binary blob of unknown
 origin — it is generated from `make_preview.py`, which is committed alongside
 it. Regenerate with:
 
 ```console
-python workshop/make_preview.py workshop/ModPreview.jpg
+python workshop/make_preview.py workshop/item/ModPreview.jpg
 ```
 
 The script needs Pillow, which is why it lives in `workshop/` and not in
@@ -72,10 +82,10 @@ confirmed against real Workshop items on this machine:
 * Steam-native BBCode is supported in the body: `[b]`, `[list]`, `[code]`,
   `[url]`. The item page renders these; `ReadMe.txt` is plain text.
 
-The manifest that ships is written for a **fresh upload** (`publishedFileId=0`).
-Steam assigns the real ID on first publish, and it then appears in the item's
-folder on disk as `PublishedFileId.ID`. Later updates keep whatever ID the item
-has.
+The manifest now carries the live id (`publishedFileId=3818684374`). Before the
+first publish it was `0`: Steam assigns the real id on first publish, and the
+item's folder on disk also gets a `PublishedFileId.ID` file containing it. A
+manifest left at `0` is only correct for a brand new item.
 
 ---
 
@@ -96,24 +106,44 @@ is heavyweight: the upload dialog only needs a folder and a manifest.
 `workshop_build.vdf` in this folder is ready for Valve's `steamcmd`:
 
 ```console
-steamcmd +login <account> +workshop_build_item workshop\workshop_build.vdf +quit
+steamcmd +login <account> +workshop_build_item <path to workshop_build.vdf> +quit
 ```
 
 * `publishedfileid 0` creates a new item; paste the assigned ID in for later
-  updates.
+  updates. The file in this repository already carries the real ID.
 * `steamcmd` replaces the item's file set with the contents of `contentfolder`,
   so keep that folder exactly as it should appear to subscribers.
-* The paths in the `.vdf` are absolute. Adjust them when publishing elsewhere.
+* **Keep the `.vdf` outside `contentfolder`**, or it uploads itself as content.
+  That is why `contentfolder` points at `workshop/item/` and not at
+  `workshop/`.
+* The paths in the `.vdf` are absolute. Adjust them when publishing elsewhere —
+  SteamCMD does not resolve them relative to the config file.
+* Logging in needs the account password **and** a Steam Guard code. With the
+  mobile authenticator, `steamcmd` prints
+  `Please enter the current code from your Steam Guard Mobile Authenticator app`
+  and accepts one interactively — allow a couple of minutes, the prompt times
+  out. Once it has succeeded, credentials are cached and later runs need
+  nothing.
 
 `steamcmd` is not bundled with Steam; it is a separate download from Valve.
+The full XCOM 2 Development Tools install is not needed for this route — the
+70 GB of the SDK is its content depot, and none of it is used here.
 
-### What no tool does for you
+### What SteamCMD does and does not do
 
-The **description on the item page** has to be set in the Steam UI (or via the
-Workshop API). `steamcmd` uploads files, not descriptions — the text in
-`SaveFix.XComMod` is for the launcher's mod list, which will never show this
-item, so it is really a second copy of the page copy kept in the repository for
-review.
+`steamcmd` **does** upload `title`, `description`, `changenote`, `visibility` and
+the preview image straight from the `.vdf` — verified against the live item,
+whose page text came out byte-identical to the `description` block in the file.
+So nothing has to be retyped in the Steam UI afterwards, and the `.vdf` in this
+repository is the authoritative copy of the page copy.
+
+What it does *not* do is rewrite the **description inside `SaveFix.XComMod`**:
+that one is read by the launcher's mod list, which will never show this item,
+so it is a second copy of the page text kept with the shipped files.
+
+One consequence worth knowing: `steamcmd` **rewrites the `.vdf` it was given**,
+reordering keys and filling in the assigned item id. That is normal, and it is
+why the id below is already the real one.
 
 ---
 
@@ -140,3 +170,19 @@ review.
 * Steam "Verify integrity of game files" and game updates both revert the
   patch. Re-running the tool is the fix; that is worth saying on the page, and
   it is.
+
+### What the live item actually reports
+
+Published as id `3818684374`, visibility public, uploaded with `steamcmd`:
+
+| Field | Value |
+|---|---|
+| title | `[WOTC] Savefix - Beyond 65535` |
+| file size | `152782` bytes — the sum of the six shipped files (1066 + 121113 + 3430 + 1323 + 22965 + 2885) |
+| creator | the uploading account, `76561198315647197` |
+| banned | `0` |
+
+The file size matching the sum exactly is the check that the whole
+`contentfolder` made it up, and that nothing extra went with it. (The first
+upload reported `152773`, 9 bytes less: that was before the real item id
+replaced the `0` placeholder in the manifest.)

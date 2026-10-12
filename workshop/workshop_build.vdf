@@ -1,33 +1,40 @@
 // steamcmd upload config for the XCOM 2 Workshop item.
 //
 // SteamCMD is documented by Valve for testing uploads; the normal route is
-// the game's own ModBuddy tool, which needs the XCOM 2 Development Tools.
-// This file is kept so the package can be republished from a script.
+// the game's own ModBuddy tool, which needs the XCOM 2 Development Tools
+// (Steam app 299990, of which only the 94 MB tool depot is actually needed).
+// This file is kept so the item can be republished without ModBuddy.
 //
-// Usage:
-//   steamcmd +login <account> +workshop_build_item workshop_build.vdf +quit
+// Usage (keep this file OUTSIDE contentfolder, or it uploads itself):
+//   steamcmd +login <account> +workshop_build_item <path to this file> +quit
 //
 //   publishedfileid "0"      -> creates a NEW workshop item
 //   publishedfileid "<id>"   -> updates that existing item
 //
-// PUBLISHED: this item is live as
+// PUBLISHED: this item is live and public as
 //   https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
 // The id below is the real one, so running the command updates that item.
 // Set it back to "0" only when starting a brand new item.
 //
-// The second "contentfolder" path is this repository's workshop-package
-// folder: the .XComMod, ReadMe.txt, SaveFix.bat and SaveFix.ps1 that ship to
-// subscribers. Note that SteamCMD uploads whole files only - it does not
-// substitute paths into the description inside the .XComMod.
+// SteamCMD DOES upload "title" and "description" from this file - confirmed
+// against the live item, whose page text is byte-identical to the block below.
+// Only the paths are local; nothing needs fixing up in the Steam UI afterwards.
+//
+// The first run rewrote this file (reordered keys, filled in the new item id).
+// That is normal: SteamCMD rewrites the config it was given.
+//
+// "contentfolder" is a sibling of this file, not its parent: the item folder
+// holds exactly what subscribers receive, and anything placed alongside this
+// .vdf is therefore never uploaded by accident.
 
 "workshopitem"
 {
-    "appid"             "268500"
-    "publishedfileid"   "3818684374"
-    "contentfolder"     "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package"
-    "previewfile"       "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package\\ModPreview.jpg"
-    "visibility"        "0"
-    "title"             "[WOTC] Savefix - Beyond 65535"
-    "description"       "Raise the save-header limit so XCOM 2 can read saves from heavily modded campaigns. See ReadMe.txt inside the item. Source: https://github.com/A16Nights/xcom2-savefix"
-    "changenote"        "First release."
+	"appid"		"268500"
+	"publishedfileid"		"3818684374"
+	"contentfolder"		"D:\\DeepSeek Work\\XCOM2\\gh\\xcom2-save-65535-unlock\\workshop\\item"
+	"previewfile"		"D:\\DeepSeek Work\\XCOM2\\gh\\xcom2-save-65535-unlock\\workshop\\item\\ModPreview.jpg"
+	"visibility"		"0"
+	"title"		"[WOTC] Savefix - Beyond 65535"
+	"description"		"[b]Raise the 65535 save-header limit so XCOM 2 / War of the Chosen can read saves from heavily modded campaigns.[/b]\n\nThis is a TOOL, not a loadable mod. It patches one byte of XCom2.exe, after which the game reads saves whose header exceeds the old 64 KiB ceiling. Nothing else about the game changes.\n\n[h1]Why saves break[/h1]\nThe widely repeated claim that this limit comes from the combined length of all your mod names is not correct. XCOM 2 stores the header length of each save in a 32-bit field at file offset 4 (call it a4). The save reader compares that field against 65536 and rejects anything larger. Mod name lists only correlate with a4 - they are not what overflows.\n\n[h1]What it changes[/h1]\nOne comparison inside the save-header reader:\n[code]before:  cmp dword ptr [rbp+0x38], 0x10000     (65536)\nafter:   cmp dword ptr [rbp+0x38], 0x400000    (4 MiB)[/code]\nThat is a single byte of XCom2.exe. Save files are never modified, rewritten or re-hashed. The writing side was never limited - only reading was.\n\n[h1]How to use[/h1]\n[list]\n[*] Subscribe to this item.\n[*] Locate this item folder: right-click XCOM 2 in Steam, Manage, Browse local files, then go up to steamapps/workshop/content/268500/3818684374.\n[*] Double-click [b]SaveFix.bat[/b]. It reports what it finds. To patch, run [b]Apply[/b].\n[*] To undo, run SaveFix.bat again and choose [b]Restore[/b]. A backup of your original executable is kept next to it.\n[/list]\nThe tool does not hardcode addresses: it locates the site by a byte signature, verifies the match is unique, and refuses to write if it is not. Both the base game and War of the Chosen are supported. Steam's Verify Integrity will undo the patch; just run Apply again.\n\nRead [b]ReadMe.txt[/b] in the item folder for full details, requirements and caveats.\n\nSource, technical write-up and bug tracker:\n[url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]"
+	"changenote"		"First public release. One-byte patch raising the save-header limit from 65536 to 4 MiB."
 }

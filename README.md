@@ -168,22 +168,27 @@ zero or multiple matches, rather than guessing.
 tools/xcom2_savefix.py    the patch tool, Python (status / apply / restore / saves)
 tools/pe_util.py          dependency-free PE reader and byte-pattern scanner
 tools/SaveFix.ps1         the same patch tool in PowerShell, no Python needed
-workshop/                 Steam Workshop item: manifest, ReadMe, launcher, preview
+workshop/item/            exactly what subscribers receive: manifest, ReadMe,
+                          launcher, tool and preview image
+workshop/workshop_build.vdf  SteamCMD upload config for that folder
+workshop/make_preview.py  regenerates ModPreview.jpg (needs Pillow)
 docs/TECHNICAL.md         how the limit was located, with disassembly and evidence
 docs/SAVE_FORMAT.md       save-file header layout
+docs/WORKSHOP.md          why the Workshop item is a tool, and how it is published
 README.zh-CN.md           简体中文说明
 DISCLAIMER.md             legal notice
 ```
 
-`workshop/` holds the files published to the Steam Workshop as
+`workshop/item/` holds the files published to the Steam Workshop as
 **[WOTC] Savefix — Beyond 65535**:
 
 > https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
 
 The Workshop item ships the PowerShell tool; subscribers run it against their
-own executable, so the item contains no game files at all. `workshop_build.vdf`
-carries the live item id, so re-running SteamCMD updates that item rather than
-creating a second one.
+own executable, so the item contains no game files at all. There is no second
+copy of these files anywhere: the repository folder *is* the upload source, and
+`workshop_build.vdf` points at it, so re-running SteamCMD updates the live item
+from a fresh clone.
 
 ## Related work
 

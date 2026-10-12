@@ -149,20 +149,23 @@ python tools/xcom2_savefix.py apply 8 --dry-run
 tools/xcom2_savefix.py    补丁工具，Python 版（status / apply / restore / saves）
 tools/pe_util.py          零依赖的 PE 读取器与字节模式扫描器
 tools/SaveFix.ps1         同一个补丁工具的 PowerShell 版，不需要 Python
-workshop/                 创意工坊条目：清单、说明、启动器、预览图
+workshop/item/            订阅者实际拿到的全部文件：清单、说明、启动器、工具、预览图
+workshop/workshop_build.vdf  上传该目录的 SteamCMD 配置
+workshop/make_preview.py  重新生成 ModPreview.jpg（需要 Pillow）
 docs/TECHNICAL.md         限制点是如何定位的：反汇编与证据
 docs/SAVE_FORMAT.md       存档文件头部布局
+docs/WORKSHOP.md          为什么工坊条目是工具而不是 MOD，以及发布流程
 README.zh-CN.md           本文件
 DISCLAIMER.md             法律声明
 ```
 
-`workshop/` 存放发布到 Steam 创意工坊的条目文件（**[WOTC] Savefix — Beyond 65535**）：
+`workshop/item/` 存放发布到 Steam 创意工坊的条目文件（**[WOTC] Savefix — Beyond 65535**）：
 
 > https://steamcommunity.com/sharedfiles/filedetails/?id=3818684374
 
 工坊条目内附的是 PowerShell 版工具，订阅者拿它去改自己机器上的可执行文件，
-因此条目本身**不含任何游戏文件**。`workshop_build.vdf` 里填的是该条目的真实 id，
-所以再跑一次 SteamCMD 是**更新**它，而不会新建第二个条目。
+因此条目本身**不含任何游戏文件**。这些文件只有这一份：仓库目录**就是**上传源，
+`workshop_build.vdf` 直接指向它，所以克隆下来重跑一次 SteamCMD 就是在更新线上条目。
 
 ## 相关工作
 
