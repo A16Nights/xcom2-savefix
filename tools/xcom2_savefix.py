@@ -71,6 +71,13 @@ IMM_OFFSET = 3          # the immediate starts 3 bytes into the match
 ORIG_LIMIT = 0x10000    # vanilla hard limit (65536)
 DEFAULT_MIB = 4
 
+# Build detection reads the file's own version resource rather than its path,
+# so a renamed or relocated copy (a backup, say) is still identified correctly.
+# "War of the Chosen" appears five times as UTF-16 in the WOTC executable and
+# zero times in the base-game executable; "XCOM 2" appears in both.
+WOTC_MARKER = 'War of the Chosen'.encode('utf-16-le')
+GAME_MARKER = 'XCOM 2'.encode('utf-16-le')
+
 BACKUP_SUFFIX = '.65535bak'
 
 WOTC_REL = os.path.join('XCom2-WarOfTheChosen', 'Binaries', 'Win64', 'XCom2.exe')
@@ -290,6 +297,15 @@ def load_pe(path: str) -> PE:
     return PE(data, path)
 
 
+def detect_build(pe: PE) -> str:
+    """Identify the build from the file's own contents, never from its path."""
+    if WOTC_MARKER in pe.data:
+        return 'War of the Chosen'
+    if GAME_MARKER in pe.data:
+        return 'base game'
+    return 'unknown (not an XCOM 2 executable?)'
+
+
 # ----------------------------------------------------------------- commands
 def cmd_status(args) -> int:
     exes = candidate_exes(args.exe)
@@ -312,7 +328,7 @@ def cmd_status(args) -> int:
             continue
         print('  size       : %d bytes   image base 0x%x   sections %d'
               % (len(pe.data), pe.image_base, len(pe.sections)))
-        kind = 'War of the Chosen' if 'WarOfTheChosen' in path else 'base game'
+        kind = detect_build(pe)
         print('  build      : %s' % kind)
         site, note = locate(pe)
         if site is None:
