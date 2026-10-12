@@ -10,6 +10,17 @@ bytes. The game then refuses to read that save: it appears red in the load
 list, and even "LOAD ANYWAY" ends in "LOAD FAILED". Nothing is wrong with the
 save - the loader's own size check is rejecting it.
 
+The save header is mostly the mod list: measured across real saves, name
+records fill 97-99% of it. And that list is not stored once - in an ordinary
+save every mod name appears exactly twice, and in a heavy campaign the whole
+list is serialised four or six times. That is why the header grows several
+times faster than your mod collection and long-running campaigns cross the
+line.
+
+What the game compares, though, is the header's own length - a 32-bit field at
+file offset 4 - against 65536. Raising that one comparison lets any header
+through, however many mods it describes.
+
 This is NOT a mod in the usual sense. The game never loads it and it cannot be
 turned on or off in the launcher. It is a tool that patches YOUR OWN copy of
 XCom2.exe, once. No game files are redistributed here.

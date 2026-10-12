@@ -83,19 +83,49 @@ All of it is length-prefixed with **32-bit** lengths. There is no 16-bit width
 field anywhere in the format, which is why raising the executable's comparison
 is sufficient: nothing downstream truncates.
 
-## Relationship to the mod-name myth
+## Why the header grows so fast
 
-The mod list lives in the header, so the header grows with the number of active
-mods. Observed correlation is strong; causation is not. Across eleven saves:
+The mod list lives in the header, and measured across a dozen saves it occupies
+**97.6 %–99.6 %** of the whole header block. The metadata listed above is a few
+hundred bytes and barely moves between campaigns; the mod list is everything
+else.
 
-| metric | predicts failure? |
-|---|---|
-| number of strings | no |
-| sum of all string lengths | no |
-| sum of deduplicated string lengths | no |
-| `a4 > 65535` | **yes, exactly** |
+It is also written **more than once**. Counting each distinct name's occurrences
+inside the header block:
 
-The mod-name total is a *proxy* for `a4`, not the value being checked.
+| save | `a4` | distinct names | name records | each name appears |
+|---|---:|---:|---:|---:|
+| `save_榴莲_3` | 16 847 | 338 | 663 | 2× |
+| `save_保存 63_1` | 36 829 | 797 | 1 583 | 2× |
+| `save_sora` | 49 663 | 336 | 1 976 | 6× |
+| `save_测试test` | 72 968 | 799 | 3 161 | 4× |
+
+The distribution is near-degenerate rather than a long tail: in `save_保存 63_1`,
+786 of 797 names occur exactly twice; in `save_sora`, 324 of 336 occur exactly
+six times. The handful of singletons are names added during the final pass.
+So the header holds N serialised copies of one list, and
+
+```
+a4  ≈  N × (one copy of the list)  +  a few hundred bytes of metadata
+```
+
+This is why a large mod collection crosses 65 535 so quickly: the cost is the
+mod list multiplied by the number of times the header is written.
+
+## Measuring it yourself
+
+To reproduce the numbers above on your own saves, parse the header block
+(`0x18` … `a4`) as UE3 `FString`s:
+
+* a **negative** length `n` means UTF-16 — the string is `-n` code units
+  **including** the terminating NUL, so it occupies `4 + (-n) * 2` bytes;
+* a **positive** length `n` means ANSI/Latin-1 — `n` bytes **including** the
+  NUL, so `4 + n` bytes.
+
+The "including the NUL" detail is easy to get wrong and silently desynchronises
+the parse at the first string, which is exactly what produced a wrong
+conclusion in an earlier revision of [`TECHNICAL.md`](TECHNICAL.md) — see its
+*Correction history* section.
 
 ## Verifying saves yourself
 

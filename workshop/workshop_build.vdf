@@ -41,7 +41,9 @@
 This is a TOOL, not a loadable mod. It patches one byte of XCom2.exe, after which the game reads saves whose header exceeds the old 64 KiB ceiling. Nothing else about the game changes.
 
 [h1]Why saves break[/h1]
-The widely repeated claim that this limit comes from the combined length of all your mod names is not correct. XCOM 2 stores the header length of each save in a 32-bit field at file offset 4 (call it a4). The save reader compares that field against 65536 and rejects anything larger. Mod name lists only correlate with a4 - they are not what overflows.
+The mod list is what fills the save header - measured across real saves it accounts for 97-99% of it - and that list is written into the header more than once. In an ordinary save each mod name appears exactly twice; in a heavy campaign the whole list is serialised four or six times, so the header grows at several times the size of your mod collection.
+
+The value the game actually compares, however, is the header's own length, stored as a 32-bit field at file offset 4 (call it a4). The save reader compares a4 against 65536 and rejects anything larger. That is the limit, and it is why raising this one comparison lets any header through.
 
 [h1]What it changes[/h1]
 One comparison inside the save-header reader:
@@ -69,7 +71,9 @@ Source, technical write-up and bug tracker:
 这是一个[b]工具[/b]，不是可以加载的 MOD。它只修改 XCom2.exe 里的一个字节，改完之后游戏就能读取存档头超过原来 64 KiB 上限的存档，游戏的其他部分没有任何变化。
 
 [h1]存档为什么会读不了[/h1]
-流传很广的说法是「这个限制来自你所有 MOD 名字加起来的总长度」，这个说法是不对的。XCOM 2 把每个存档的头部长度存在文件偏移 4 处的 32 位字段里（这里记作 a4），存档读取代码拿这个字段和 65536 比较，比它大的就拒绝。MOD 名字列表只是和 a4 相关，溢出并不是它造成的。
+撑大存档头的确实是 MOD 名称列表——实测它占了头部的 97-99%，而且这份列表被写进头部[b]不止一遍[/b]：普通存档里每个 MOD 名出现两次，重度战役则整份列表被序列化四到六遍，所以头部会以远快于 MOD 数量的速度变大。
+
+但游戏真正拿去比较的数字是「头部自身的长度」——它存在文件偏移 4 处的 32 位字段里（记作 a4）。存档读取代码拿 a4 和 65536 比较，比它大的就拒绝。这就是那条上限；也正因如此，把这一处比较放宽之后，头部描述多少 MOD 都能通过。
 
 [h1]改了什么[/h1]
 存档头读取代码里的一处比较：

@@ -18,9 +18,10 @@ If you run enough mods, XCOM 2 will eventually show your saves as **corrupt**
 — a *"load failed"* dialog). The save is intact. The game just refuses to read
 it.
 
-The community explanation is that the *combined length of all mod names* passed
-65 535. **That explanation is wrong.** Measured across a dozen real saves, no
-"total name length" quantity predicts which saves break. Exactly one thing does:
+The usual explanation is that the *combined length of all mod names* passed
+65 535. The cargo half of that is correct — the mod list really is what fills a
+save header, and it really is what pushes saves over the line. What the game
+actually measures is the **length of the whole header**, not the names:
 
 | save file | header length field (`a4`) | loads? |
 |---|---:|---|
@@ -29,14 +30,29 @@ The community explanation is that the *combined length of all mod names* passed
 | `save_sora` | 49 663 | yes |
 | — | **65 535 (the limit)** | — |
 | `save_快速保存：战役97，任务16，回合1` | 66 913 | **no** |
-| `save_保存 12` | 72 822 | **no** |
-| `save_RAN` | 72 822 | **no** |
+| `save_测试test` | 72 968 | **no** |
 
-The dword at **file offset 0x04** in a save file is the length of the save
-header. It happens to grow with the mod list, which is why the myth survived.
-The actual rule is simply:
+The dword at **file offset 0x04** is that header length — call it `a4`. The
+game compares `a4` against 65 536 and rejects anything larger, so the exact
+rule is:
 
 > **`a4 > 65535` ⟺ the save cannot be loaded.**
+
+`a4` tracks the mod list because the header *is* mostly the mod list: across a
+dozen saves, the name records occupy **97.6 %–99.6 %** of it. But the list does
+not occupy it once. In an ordinary save every mod name appears **exactly
+twice**, and heavier campaigns serialise the whole list **four or six times**:
+
+| save | `a4` | distinct mod names | name records | each name appears |
+|---|---:|---:|---:|---:|
+| `save_榴莲_3` | 16 847 | 338 | 663 | 2× |
+| `save_保存 63_1` | 36 829 | 797 | 1 583 | 2× |
+| `save_sora` | 49 663 | 336 | 1 976 | 6× |
+| `save_测试test` | 72 968 | 799 | 3 161 | 4× |
+
+So the field that overflows is the header length, and the reason it grows so
+fast is that a long mod list is written into it several times over. Both halves
+matter: the mod list is the cargo, `a4` is the number being measured.
 
 ## The cause
 

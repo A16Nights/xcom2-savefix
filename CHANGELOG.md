@@ -7,6 +7,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+* **Corrected the explanation of what causes the overflow.** Earlier revisions
+  said the widely-repeated "mod names exceed 65 535" account was simply wrong.
+  That was itself wrong, and came from a broken measurement: the header scan
+  treated the UE3 `FString` length as excluding the terminating NUL, which
+  desynchronised the parse at the first string and produced meaningless
+  numbers. Re-measured correctly, name records occupy **97.6 %–99.6 %** of a
+  save header, and the list is serialised into it **more than once** (each name
+  appears twice in an ordinary save, four or six times in a heavy campaign).
+  `README.md`, `README.zh-CN.md`, `docs/TECHNICAL.md`, `docs/SAVE_FORMAT.md`,
+  the Workshop page text and the item's `ReadMe.txt` now state the mechanism
+  accurately. What is unchanged: `a4 > 65535` is the exact rule, the comparison
+  is at `0x140a57d6c`, and the one-byte fix works.
 * Workshop page description: the `description` in `workshop_build.vdf` used the
   two-character sequence `\n`, which is not un-escaped anywhere in the SteamCMD
   path, so the published page displayed a literal `\n` throughout instead of
@@ -16,6 +28,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 * A Chinese section on the Workshop page, describing the problem, the one-byte
   change, and the usage steps.
+* `docs/TECHNICAL.md` § 1 now carries the per-save measurements (header
+  composition, name-record counts, copies-per-name histograms) and a
+  *Correction history* section recording what the earlier wrong conclusion was,
+  why the scan produced it, and what replaced it.
 
 ## [1.0.0] — 2026-10-12
 

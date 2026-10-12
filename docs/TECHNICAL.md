@@ -6,39 +6,95 @@ Everything here was measured on a legally purchased Steam copy of
 
 ---
 
-## 1. Where the limit is *not*
+## 1. What the limit actually counts
 
-The problem is widely described as "the combined length of all mod names
-exceeds 65 535". That is a coincidence of correlation, not the mechanism.
+The problem is usually described as "the combined length of all mod names
+exceeds 65 535". The *cause* in that sentence is right; the *quantity* is not.
+The game never sums mod names. It compares one 32-bit field — the length of the
+whole save header — against 65 536.
 
 ### The save format has no 16-bit fields
 
 A scan of complete save files for any 16-bit word matching a plausible length
 value returns nothing — every length and count in the format is a 32-bit
 integer. If the limit were a format-level truncation, at least one 16-bit width
-field would have to exist. None does.
+field would have to exist. None does. The limit therefore lives in the
+executable, and section 2 locates it.
 
-### No "total name length" quantity predicts failure
+### What fills the header
 
-Across eleven real saves, several candidate quantities were computed and
-compared against which saves actually fail to load:
+The header block runs from file offset `0x18` to `a4`. Parsing it as UE3
+`FString`s (length is 32-bit and **includes** the terminating NUL; negative
+length means UTF-16) accounts for essentially all of it:
 
-| candidate metric | predicts the 3 broken saves? |
-|---|---|
-| number of strings in the header | no |
-| `sum(len(s)+1)` over all strings | no |
-| `sum(len(s)+1)` over deduplicated strings | no |
-| **`a4` (header length field, file offset 0x04)** | **yes — exactly** |
+| save | `a4` | header block | name records | name bytes | share of block |
+|---|---:|---:|---:|---:|---:|
+| `save_传承行动 1：任务6，回合1` | 601 | 577 | 12 | 218 | 38 % |
+| `save_榴莲_3` | 16 847 | 16 823 | 663 | 16 531 | 98 % |
+| `save_Cold Rain_1` | 16 917 | 16 893 | 664 | 16 571 | 98 % |
+| `save_铁人：战役85` | 18 742 | 18 718 | 746 | 18 407 | 98 % |
+| `save_ZAKO` | 30 313 | 30 289 | 1 351 | 29 993 | 99 % |
+| `save_保存 10` | 36 741 | 36 717 | 1 583 | 36 401 | 99 % |
+| `save_保存 63_1` | 36 829 | 36 805 | 1 583 | 36 401 | 99 % |
+| `save_sora` | 49 663 | 49 639 | 1 976 | 49 344 | 99 % |
+| `save_快速保存：战役97，任务16，回合1` | 66 913 | 66 889 | 2 934 | 66 552 | 99 % |
+| `save_测试test` | 72 968 | 72 944 | 3 161 | 72 636 | 100 % |
 
-Only `a4` separates the working saves from the broken ones, with a clean cut at
-65 535. The mod-name total merely happens to grow with `a4`; it is not what the
-game compares.
+Summed over twelve saves: **400 073 bytes of header, of which 396 103 (99.0 %)
+are mod-name records.** The remaining 1 % is genuine metadata — the date/time,
+the player's save name, the map URL, a version string, a language tag — and it
+does not scale with the campaign.
+
+### Why the header grows so fast: the list is written repeatedly
+
+The name list is not stored once. Counting how often each distinct name occurs
+in the header block:
+
+| save | `a4` | distinct names | name records | each name appears |
+|---|---:|---:|---:|---:|
+| `save_传承行动 1：任务6，回合1` | 601 | 12 | 12 | 1× |
+| `save_榴莲_3` | 16 847 | 338 | 663 | 2× |
+| `save_Cold Rain_1` | 16 917 | 338 | 664 | 2× |
+| `save_铁人：战役85` | 18 742 | 379 | 746 | 2× |
+| `save_ZAKO` | 30 313 | 682 | 1 351 | 2× |
+| `save_保存 10` | 36 741 | 797 | 1 583 | 2× |
+| `save_保存 63_1` | 36 829 | 797 | 1 583 | 2× |
+| `save_sora` | 49 663 | 336 | 1 976 | 6× |
+| `save_快速保存：战役97，任务16，回合1` | 66 913 | 801 | 2 934 | 4× |
+| `save_测试test` | 72 968 | 799 | 3 161 | 4× |
+
+The per-name histogram is near-degenerate, not a long tail: in `save_保存 63_1`
+786 of 797 names occur exactly twice and 11 occur once; in `save_sora` 324 of
+336 occur exactly six times; in `save_测试test` 785 of 799 occur exactly four
+times. The few singletons are the ones added last (the most recent save name,
+a fresh autosave slot, and similar), which only made it into the final pass.
+So these are not two independent lists — **the same list is serialised N times
+into one header**, and `a4` is roughly `N × (one copy) + ~400 bytes`.
+
+That is the mechanism, and it is why a heavy mod list reaches 65 536 so easily:
+the cost is not the mod names, it is the mod names multiplied by the number of
+times the header is written.
 
 ### The writer never enforced it
 
 After patching, the game wrote a brand-new save — `save_测试test`, header length
 **72 968** — with no complaint. The write path has no length ceiling at all. The
 bottleneck is exclusively on the read path.
+
+### Correction history
+
+An earlier revision of this document claimed that *no* "total name length"
+quantity predicts failure, on the strength of a scan that summed every string in
+the header. That scan was wrong: it treated the `FString` length as excluding
+the terminator, which desynchronised the parse at the very first string, and it
+did not account for UTF-16 doubling or for the repeated copies. The correct
+metric — name bytes including `FString` framing, times the number of copies —
+reproduces `a4` to within a few hundred bytes on every save tested. The
+correction was prompted by a Workshop commenter who had originally established
+the mod-list explanation; they were right about the cause.
+
+What survives from the earlier analysis, unchanged: `a4 > 65535 ⟺ failure`, the
+location of the comparison, and the one-byte fix.
 
 ## 2. Locating the check
 

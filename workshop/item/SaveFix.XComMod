@@ -7,6 +7,12 @@ Description=Raise the save-header limit so XCOM 2 can read saves from heavily mo
 
 Once a campaign has enough mods installed, a save file's header grows past 65,535 bytes. At that point the game refuses to read the save: it appears red in the load list ("SAVE OUT OF DATE"), and choosing LOAD ANYWAY still ends in "LOAD FAILED". The campaign is fine - only the loader's size check is rejecting it. This is what makes long-running, heavily-modded campaigns suddenly unloadable.
 
+[b]WHY IT HAPPENS[/b]
+
+The mod list is what fills the header - measured across real saves it accounts for [b]97-99%[/b] of it - and that list is written into the header [b]more than once[/b]. In an ordinary save each mod name appears exactly twice; in a heavy campaign the whole list gets serialised four or six times. So the header grows at several times the size of the mod collection, and long-running campaigns cross the line.
+
+The number the game actually compares, though, is the header's own length, not the mod names. That distinction is why the fix works: raising the comparison lets any header through, no matter how many mods it describes.
+
 [b]WHAT THIS DOES[/b]
 
 It raises one hard-coded comparison inside XCom2.exe from 65,536 bytes to 4,194,304 bytes (4 MiB). Exactly [b]one byte[/b] of the executable changes. Save files are never touched - the game never limited writing, only reading.
@@ -45,11 +51,17 @@ Run [code]SaveFix.bat Restore[/code]. A backup of your original executable is ma
 [b]SOURCE AND TECHNICAL WRITEUP[/b]
 
 [url=https://github.com/A16Nights/xcom2-savefix]github.com/A16Nights/xcom2-savefix[/url]
-Includes the reverse-engineering notes on where the limit actually lives, and why the widely-repeated "mod names exceed 65535 characters" explanation is not what is happening.
+Includes the reverse-engineering notes on where the limit actually lives, and measurements of how much of a save header is really made of mod names.
 
 [b]中文说明[/b]
 
 把存档头的 65535 上限提高，让《幽浮2》/《天选者之战》能够读取重度 MOD 战役的存档。
+
+[b]为什么会这样[/b]
+
+撑大存档头的确实是 MOD 名称列表——实测它占了头部的 [b]97-99%[/b]，而且这份列表被写进头部[b]不止一遍[/b]：普通存档里每个 MOD 名出现两次，重度战役则整份列表被序列化四到六遍。所以头部会以远快于 MOD 数量的速度变大，长期战役很容易越线。
+
+但游戏真正拿去比较的数字是「头部自身的长度」，而不是 MOD 名字。这个区别正是本补丁成立的原因：把那个比较放宽之后，头部描述多少 MOD 都能通过。
 
 这是一个工具，不是可以加载的 MOD。它只修改 XCom2.exe 里的一个字节：把存档头读取代码里的一处比较从 65536 改成 4194304（4 MiB）。存档文件不会被修改——写入端本来就没有限制，有上限的只是读取端。
 
