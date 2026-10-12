@@ -46,6 +46,23 @@ Run [code]SaveFix.bat Restore[/code]. A backup of your original executable is ma
 
 [url=https://github.com/A16Nights/xcom2-savefix]github.com/A16Nights/xcom2-savefix[/url]
 Includes the reverse-engineering notes on where the limit actually lives, and why the widely-repeated "mod names exceed 65535 characters" explanation is not what is happening.
+
+[b]中文说明[/b]
+
+把存档头的 65535 上限提高，让《幽浮2》/《天选者之战》能够读取重度 MOD 战役的存档。
+
+这是一个工具，不是可以加载的 MOD。它只修改 XCom2.exe 里的一个字节：把存档头读取代码里的一处比较从 65536 改成 4194304（4 MiB）。存档文件不会被修改——写入端本来就没有限制，有上限的只是读取端。
+
+[b]怎么用[/b]
+
+[list]
+[*]订阅本条目。
+[*]找到条目所在文件夹：在 Steam 里右键 XCOM 2 -> 管理 -> 浏览本地文件，然后往上回到 steamapps/workshop/content/268500/[i]<本条目 ID>[/i]。
+[*]双击 [b]SaveFix.bat[/b]，它会先报告当前状态。要打补丁就运行 [code]SaveFix.bat Apply[/code]。
+[*]想还原就再运行一次并选 Restore。原版可执行文件会在第一次修改前自动备份在旁边。
+[/list]
+
+工具不写死地址：它靠字节签名定位，确认只命中一处才动手，命中数不对就拒绝写入。基础版和天选者之战都支持。Steam 的「验证游戏文件完整性」会把补丁抹掉，重新运行一次 Apply 即可。
 RequiresXPACK=true
 tags= war of the chosen, WotC, utility
 

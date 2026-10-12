@@ -16,9 +16,10 @@
 // The id below is the real one, so running the command updates that item.
 // Set it back to "0" only when starting a brand new item.
 //
-// SteamCMD DOES upload "title" and "description" from this file - confirmed
-// against the live item, whose page text is byte-identical to the block below.
-// Only the paths are local; nothing needs fixing up in the Steam UI afterwards.
+// DESCRIPTION NEWLINES: the value below uses REAL line breaks, not the
+// two-character sequence backslash-n. Written literally as "\n" the text
+// reached the item page as a visible "\n" instead of a line break, because
+// nothing in this path un-escapes it. Real newlines are what the page needs.
 //
 // The first run rewrote this file (reordered keys, filled in the new item id).
 // That is normal: SteamCMD rewrites the config it was given.
@@ -35,6 +36,59 @@
 	"previewfile"		"D:\\DeepSeek Work\\XCOM2\\gh\\xcom2-save-65535-unlock\\workshop\\item\\ModPreview.jpg"
 	"visibility"		"0"
 	"title"		"[WOTC] Savefix - Beyond 65535"
-	"description"		"[b]Raise the 65535 save-header limit so XCOM 2 / War of the Chosen can read saves from heavily modded campaigns.[/b]\n\nThis is a TOOL, not a loadable mod. It patches one byte of XCom2.exe, after which the game reads saves whose header exceeds the old 64 KiB ceiling. Nothing else about the game changes.\n\n[h1]Why saves break[/h1]\nThe widely repeated claim that this limit comes from the combined length of all your mod names is not correct. XCOM 2 stores the header length of each save in a 32-bit field at file offset 4 (call it a4). The save reader compares that field against 65536 and rejects anything larger. Mod name lists only correlate with a4 - they are not what overflows.\n\n[h1]What it changes[/h1]\nOne comparison inside the save-header reader:\n[code]before:  cmp dword ptr [rbp+0x38], 0x10000     (65536)\nafter:   cmp dword ptr [rbp+0x38], 0x400000    (4 MiB)[/code]\nThat is a single byte of XCom2.exe. Save files are never modified, rewritten or re-hashed. The writing side was never limited - only reading was.\n\n[h1]How to use[/h1]\n[list]\n[*] Subscribe to this item.\n[*] Locate this item folder: right-click XCOM 2 in Steam, Manage, Browse local files, then go up to steamapps/workshop/content/268500/3818684374.\n[*] Double-click [b]SaveFix.bat[/b]. It reports what it finds. To patch, run [b]Apply[/b].\n[*] To undo, run SaveFix.bat again and choose [b]Restore[/b]. A backup of your original executable is kept next to it.\n[/list]\nThe tool does not hardcode addresses: it locates the site by a byte signature, verifies the match is unique, and refuses to write if it is not. Both the base game and War of the Chosen are supported. Steam's Verify Integrity will undo the patch; just run Apply again.\n\nRead [b]ReadMe.txt[/b] in the item folder for full details, requirements and caveats.\n\nSource, technical write-up and bug tracker:\n[url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]"
-	"changenote"		"First public release. One-byte patch raising the save-header limit from 65536 to 4 MiB."
+	"description"		"[b]Raise the 65535 save-header limit so XCOM 2 / War of the Chosen can read saves from heavily modded campaigns.[/b]
+
+This is a TOOL, not a loadable mod. It patches one byte of XCom2.exe, after which the game reads saves whose header exceeds the old 64 KiB ceiling. Nothing else about the game changes.
+
+[h1]Why saves break[/h1]
+The widely repeated claim that this limit comes from the combined length of all your mod names is not correct. XCOM 2 stores the header length of each save in a 32-bit field at file offset 4 (call it a4). The save reader compares that field against 65536 and rejects anything larger. Mod name lists only correlate with a4 - they are not what overflows.
+
+[h1]What it changes[/h1]
+One comparison inside the save-header reader:
+[code]before:  cmp dword ptr [rbp+0x38], 0x10000     (65536)
+after:   cmp dword ptr [rbp+0x38], 0x400000    (4 MiB)[/code]
+That is a single byte of XCom2.exe. Save files are never modified, rewritten or re-hashed. The writing side was never limited - only reading was.
+
+[h1]How to use[/h1]
+[list]
+[*] Subscribe to this item.
+[*] Locate this item folder: right-click XCOM 2 in Steam, Manage, Browse local files, then go up to steamapps/workshop/content/268500/3818684374.
+[*] Double-click [b]SaveFix.bat[/b]. It reports what it finds. To patch, run [b]Apply[/b].
+[*] To undo, run SaveFix.bat again and choose [b]Restore[/b]. A backup of your original executable is kept next to it.
+[/list]
+The tool does not hardcode addresses: it locates the site by a byte signature, verifies the match is unique, and refuses to write if it is not. Both the base game and War of the Chosen are supported. Steam's Verify Integrity will undo the patch; just run Apply again.
+
+Read [b]ReadMe.txt[/b] in the item folder for full details, requirements and caveats.
+
+Source, technical write-up and bug tracker:
+[url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]
+
+[h1]中文说明[/h1]
+[b]把存档头的 65535 上限提高[/b]，让《幽浮2》/《天选者之战》能够读取重度 MOD 战役的存档。
+
+这是一个[b]工具[/b]，不是可以加载的 MOD。它只修改 XCom2.exe 里的一个字节，改完之后游戏就能读取存档头超过原来 64 KiB 上限的存档，游戏的其他部分没有任何变化。
+
+[h1]存档为什么会读不了[/h1]
+流传很广的说法是「这个限制来自你所有 MOD 名字加起来的总长度」，这个说法是不对的。XCOM 2 把每个存档的头部长度存在文件偏移 4 处的 32 位字段里（这里记作 a4），存档读取代码拿这个字段和 65536 比较，比它大的就拒绝。MOD 名字列表只是和 a4 相关，溢出并不是它造成的。
+
+[h1]改了什么[/h1]
+存档头读取代码里的一处比较：
+[code]改前:  cmp dword ptr [rbp+0x38], 0x10000     (65536)
+改后:  cmp dword ptr [rbp+0x38], 0x400000    (4 MiB)[/code]
+就这一个字节。存档文件不会被修改、重写或重新计算哈希——写入端本来就没有限制，有上限的只是读取端。
+
+[h1]怎么用[/h1]
+[list]
+[*] 订阅本条目。
+[*] 找到条目所在文件夹：在 Steam 里右键 XCOM 2 → 管理 → 浏览本地文件，然后往上回到 steamapps/workshop/content/268500/3818684374。
+[*] 双击 [b]SaveFix.bat[/b]，它会先报告当前状态。要打补丁就运行 [b]Apply[/b]。
+[*] 想还原就再运行一次 SaveFix.bat 并选 [b]Restore[/b]。原版可执行文件会在第一次修改前自动备份在旁边。
+[/list]
+工具不写死地址：它靠字节签名定位，确认只命中一处才动手，命中数不对就拒绝写入。基础版和天选者之战都支持。Steam 的「验证游戏文件完整性」会把补丁抹掉，重新运行一次 Apply 即可。
+
+完整说明、前提条件和注意事项请看条目文件夹里的 [b]ReadMe.txt[/b]。
+
+源码、技术分析与问题反馈：
+[url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]"
+	"changenote"		"Description: real line breaks instead of literal \n, plus a Chinese section."
 }

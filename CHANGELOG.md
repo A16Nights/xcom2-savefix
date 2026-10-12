@@ -3,6 +3,20 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+* Workshop page description: the `description` in `workshop_build.vdf` used the
+  two-character sequence `\n`, which is not un-escaped anywhere in the SteamCMD
+  path, so the published page displayed a literal `\n` throughout instead of
+  line breaks. Both copies of the page text now use real newlines.
+
+### Added
+
+* A Chinese section on the Workshop page, describing the problem, the one-byte
+  change, and the usage steps.
+
 ## [1.0.0] — 2026-10-12
 
 First public release.

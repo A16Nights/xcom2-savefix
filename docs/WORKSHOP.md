@@ -77,10 +77,19 @@ The script needs Pillow, which is why it lives in `workshop/` and not in
 `.XComMod` is an INI file. Two details that are easy to get wrong, both
 confirmed against real Workshop items on this machine:
 
-* **`Description` uses literal newlines**, not `\n` escapes. Writing `\n`
-  produces a page with visible backslash-n in it.
+* **`Description` uses real newlines**, not `\n` escapes. Writing the
+  two-character sequence `\n` produces a page with a visible `\n` in it —
+  nothing in this path un-escapes it.
 * Steam-native BBCode is supported in the body: `[b]`, `[list]`, `[code]`,
   `[url]`. The item page renders these; `ReadMe.txt` is plain text.
+
+**The same rule applies to the `description` in `workshop_build.vdf`**, and
+that one is easy to miss because the `.vdf` *is* a Steam KeyValues file, where
+escape sequences look plausible. They are not processed: the first publish of
+this item sent `\n` literally and the page showed it literally. Both copies of
+the page text therefore use real line breaks, and both are verified after
+upload by reading the text back through the Steam Web API — not by eye, and not
+by assuming that because the value arrived it arrived correctly.
 
 The manifest now carries the live id (`publishedFileId=3818684374`). Before the
 first publish it was `0`: Steam assigns the real id on first publish, and the
@@ -132,10 +141,17 @@ The full XCOM 2 Development Tools install is not needed for this route — the
 ### What SteamCMD does and does not do
 
 `steamcmd` **does** upload `title`, `description`, `changenote`, `visibility` and
-the preview image straight from the `.vdf` — verified against the live item,
-whose page text came out byte-identical to the `description` block in the file.
-So nothing has to be retyped in the Steam UI afterwards, and the `.vdf` in this
-repository is the authoritative copy of the page copy.
+the preview image straight from the `.vdf`, so nothing has to be retyped in the
+Steam UI afterwards. What it does *not* do is interpret anything inside those
+values: escaping, markup or otherwise. Whatever is between the quotes is what
+lands on the page, which is why the newline rule above matters and why the
+`.vdf` in this repository is the authoritative copy of the page copy.
+
+"Arrived" and "arrived correctly" are different claims, and only the second one
+is worth making. Verify by fetching the description back and counting: no
+literal `\n`, a plausible number of real line breaks, and the expected script
+present. Reading the page by eye is what let a page full of literal `\n` pass as
+correct on the first publish.
 
 What it does *not* do is rewrite the **description inside `SaveFix.XComMod`**:
 that one is read by the launcher's mod list, which will never show this item,
@@ -149,7 +165,8 @@ why the id below is already the real one.
 
 ## Checklist before publishing
 
-- [ ] `SaveFix.XComMod` — title, description, tags present; newlines literal.
+- [ ] `SaveFix.XComMod` — title, description, tags present; real newlines.
+- [ ] `workshop_build.vdf` — `description` uses real newlines too; keys intact.
 - [ ] `ModPreview.jpg` — regenerated, 1024×1024, shows the actual fix.
 - [ ] `SaveFix.ps1` — syntax-checks clean, and `Status` / `Apply` / `Restore`
       all behave on a **copy** of the executable.
@@ -158,6 +175,8 @@ why the id below is already the real one.
 - [ ] No BOM on any text file (Windows tooling is inconsistent about this).
 - [ ] The page copy does not claim the item is a mod, and does not claim mods
       can fix this. It is a tool, and it patches one byte.
+- [ ] **After publishing**: fetch the description back and check it — literal
+      `\n` count is 0 and the expected text is present. Do not eyeball the page.
 
 ---
 
@@ -178,11 +197,12 @@ Published as id `3818684374`, visibility public, uploaded with `steamcmd`:
 | Field | Value |
 |---|---|
 | title | `[WOTC] Savefix - Beyond 65535` |
-| file size | `152782` bytes — the sum of the six shipped files (1066 + 121113 + 3430 + 1323 + 22965 + 2885) |
+| file size | `153909` bytes — the sum of the six shipped files (1066 + 121113 + 3430 + 4012 + 1323 + 22965) |
 | creator | the uploading account, `76561198315647197` |
 | banned | `0` |
 
 The file size matching the sum exactly is the check that the whole
-`contentfolder` made it up, and that nothing extra went with it. (The first
-upload reported `152773`, 9 bytes less: that was before the real item id
-replaced the `0` placeholder in the manifest.)
+`contentfolder` made it up, and that nothing extra went with it. It has been a
+useful tripwire three times: `152773` on the first upload (before the real item
+id replaced the `0` placeholder), `152782` once it had, and `153909` after the
+Chinese section was added to `SaveFix.XComMod`.
