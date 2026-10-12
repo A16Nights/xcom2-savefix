@@ -90,5 +90,5 @@ Source, technical write-up and bug tracker:
 
 源码、技术分析与问题反馈：
 [url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]"
-	"changenote"		"Description: real line breaks instead of literal \n, plus a Chinese section."
+	"changenote"		"Fixed the description's line breaks and added a Chinese section."
 }
