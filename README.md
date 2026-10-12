@@ -1,4 +1,4 @@
-# XCOM 2 — Save Header 65535 Limit Unlock
+# XCOM 2 Savefix — Beyond 65535
 
 Raise the hard-coded **65 535 character limit** on XCOM 2 save headers, so saves
 from heavily modded games load normally again.
@@ -6,6 +6,8 @@ from heavily modded games load normally again.
 > **Status:** reverse engineered, patched, and confirmed in-game on
 > *War of the Chosen*. The tool locates the patch site by byte signature, so it
 > is not tied to one game build.
+
+English | [简体中文](README.zh-CN.md)
 
 ---
 
@@ -75,6 +77,10 @@ shows **exactly one differing byte**.
 Requires Python 3.8+ (standard library only — no `pip install`).
 
 ```console
+# Get the repository
+git clone https://github.com/A16Nights/xcom2-savefix.git
+cd xcom2-savefix
+
 # 1. See what the tool finds, and whether your game is already patched
 python tools/xcom2_savefix.py status
 
@@ -153,6 +159,7 @@ tools/xcom2_savefix.py    the patch tool (status / apply / restore / saves)
 tools/pe_util.py          dependency-free PE reader and byte-pattern scanner
 docs/TECHNICAL.md         how the limit was located, with disassembly and evidence
 docs/SAVE_FORMAT.md       save-file header layout
+README.zh-CN.md           简体中文说明
 DISCLAIMER.md             legal notice
 ```
 
