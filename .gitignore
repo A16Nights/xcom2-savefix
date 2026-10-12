@@ -15,8 +15,13 @@ venv/
 *.tfc
 *.bak
 *.pdb
-save_*
 XComGame/
+
+# XCOM 2 save files carry no extension and are written as "save_<desc>".
+# Anchor the pattern so it cannot swallow sources such as docs/SAVE_FORMAT.md
+# on case-insensitive filesystems (Windows, macOS).
+/save_*
+save_[!A-Za-z]*
 
 # Editors / OS
 .vscode/
