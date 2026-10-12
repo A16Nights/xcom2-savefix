@@ -1,0 +1,28 @@
+// steamcmd upload config for the XCOM 2 Workshop item.
+//
+// SteamCMD is documented by Valve for testing uploads; the normal route is
+// the game's own ModBuddy tool, which needs the XCOM 2 Development Tools.
+// This file is kept so the package can be republished from a script.
+//
+// Usage:
+//   steamcmd +login <account> +workshop_build_item workshop_build.vdf +quit
+//
+//   publishedfileid "0"      -> creates a NEW workshop item
+//   publishedfileid "<id>"   -> updates that existing item
+//
+// The second "contentfolder" path is this repository's workshop-package
+// folder: the .XComMod, ReadMe.txt, SaveFix.bat and SaveFix.ps1 that ship to
+// subscribers. Note that SteamCMD uploads whole files only - it does not
+// substitute paths into the description inside the .XComMod.
+
+"workshopitem"
+{
+    "appid"             "268500"
+    "publishedfileid"   "0"
+    "contentfolder"     "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package"
+    "previewfile"       "D:\\DeepSeek Work\\XCOM2\\gh\\workshop-package\\ModPreview.jpg"
+    "visibility"        "0"
+    "title"             "[WOTC] Savefix - Beyond 65535"
+    "description"       "Raise the save-header limit so XCOM 2 can read saves from heavily modded campaigns. See ReadMe.txt inside the item. Source: https://github.com/A16Nights/xcom2-savefix"
+    "changenote"        "First release."
+}

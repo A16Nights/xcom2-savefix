@@ -74,7 +74,17 @@ shows **exactly one differing byte**.
 
 ## Usage
 
-Requires Python 3.8+ (standard library only — no `pip install`).
+There are two implementations of the same patch. Both locate the site by byte
+signature, both back up before writing, both are equally verified.
+
+**PowerShell** — no Python needed, works on any current Windows:
+
+```console
+powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Status
+powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Apply
+```
+
+**Python 3.8+** — standard library only, no `pip install`:
 
 ```console
 # Get the repository
@@ -155,13 +165,20 @@ zero or multiple matches, rather than guessing.
 ## Repository layout
 
 ```
-tools/xcom2_savefix.py    the patch tool (status / apply / restore / saves)
+tools/xcom2_savefix.py    the patch tool, Python (status / apply / restore / saves)
 tools/pe_util.py          dependency-free PE reader and byte-pattern scanner
+tools/SaveFix.ps1         the same patch tool in PowerShell, no Python needed
+workshop/                 Steam Workshop item: manifest, ReadMe, launcher, preview
 docs/TECHNICAL.md         how the limit was located, with disassembly and evidence
 docs/SAVE_FORMAT.md       save-file header layout
 README.zh-CN.md           简体中文说明
 DISCLAIMER.md             legal notice
 ```
+
+`workshop/` holds the files published to the Steam Workshop as
+**[WOTC] Savefix — Beyond 65535**. The Workshop item ships the PowerShell
+tool; subscribers run it against their own executable, so the item contains no
+game files at all.
 
 ## Related work
 

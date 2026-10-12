@@ -67,7 +67,16 @@ MOD 装得足够多以后，XCOM 2 会开始把你的存档标记为**损坏**�
 
 ## 使用方法
 
-需要 Python 3.8+（**仅用标准库**，无需 `pip install`）。
+同一个补丁有两套实现，都是按字节签名定位、都在写入前自动备份、都经过同等验证。
+
+**PowerShell 版**——不需要 Python，任何现行 Windows 都能跑：
+
+```console
+powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Status
+powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Apply
+```
+
+**Python 3.8+ 版**——**仅用标准库**，无需 `pip install`：
 
 ```console
 # 获取仓库
@@ -137,13 +146,19 @@ python tools/xcom2_savefix.py apply 8 --dry-run
 ## 仓库结构
 
 ```
-tools/xcom2_savefix.py    补丁工具（status / apply / restore / saves）
+tools/xcom2_savefix.py    补丁工具，Python 版（status / apply / restore / saves）
 tools/pe_util.py          零依赖的 PE 读取器与字节模式扫描器
+tools/SaveFix.ps1         同一个补丁工具的 PowerShell 版，不需要 Python
+workshop/                 创意工坊条目：清单、说明、启动器、预览图
 docs/TECHNICAL.md         限制点是如何定位的：反汇编与证据
 docs/SAVE_FORMAT.md       存档文件头部布局
 README.zh-CN.md           本文件
 DISCLAIMER.md             法律声明
 ```
+
+`workshop/` 存放发布到 Steam 创意工坊的条目文件（**[WOTC] Savefix — Beyond 65535**）。
+工坊条目内附的是 PowerShell 版工具，订阅者拿它去改自己机器上的可执行文件，
+因此条目本身**不含任何游戏文件**。
 
 ## 相关工作
 

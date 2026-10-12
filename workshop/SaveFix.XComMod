@@ -1,0 +1,51 @@
+[mod]
+publishedFileId=0
+Title=[WOTC] Savefix - Beyond 65535
+Description=Raise the save-header limit so XCOM 2 can read saves from heavily modded campaigns.
+
+[b]THE PROBLEM[/b]
+
+Once a campaign has enough mods installed, a save file's header grows past 65,535 bytes. At that point the game refuses to read the save: it appears red in the load list ("SAVE OUT OF DATE"), and choosing LOAD ANYWAY still ends in "LOAD FAILED". The campaign is fine - only the loader's size check is rejecting it. This is what makes long-running, heavily-modded campaigns suddenly unloadable.
+
+[b]WHAT THIS DOES[/b]
+
+It raises one hard-coded comparison inside XCom2.exe from 65,536 bytes to 4,194,304 bytes (4 MiB). Exactly [b]one byte[/b] of the executable changes. Save files are never touched - the game never limited writing, only reading.
+
+[b]THIS IS NOT A NORMAL MOD[/b]
+
+The game does not load this. It cannot be enabled or disabled in the launcher, and it will not appear in your mod list. It is a tool plus instructions: you run it once, on your own machine, and it patches your own copy of the game executable. [b]No game files are distributed here[/b] - the tool does all the work locally.
+
+[b]HOW TO USE[/b]
+
+[list]
+[*]1. Subscribe. Steam downloads this package.
+[*]2. [b]Close XCOM 2[/b] - it locks the executable while running.
+[*]3. Open the folder Steam put this in:
+[code]<your Steam library>\\steamapps\\workshop\\content\\268500\\[i]<this item's ID>[/i][/code]
+The ID is in this page's URL.
+[*]4. Run [b]SaveFix.bat[/b] in that folder.
+[*]5. Read what it prints. If it says ORIGINAL, run [code]SaveFix.bat Apply[/code].
+[/list]
+
+[b]UNDOING IT[/b]
+
+Run [code]SaveFix.bat Restore[/code]. A backup of your original executable is made automatically before the first change, and Restore puts it back byte-for-byte. Steam's "Verify integrity of game files" also works.
+
+[b]GOOD TO KNOW[/b]
+
+[list]
+[*]Works on both the base game and War of the Chosen - the patch site is found by byte signature, never a fixed address, so it survives address changes.
+[*]It will refuse to write anything unless it finds that signature exactly once.
+[*]Save files are never modified, so it cannot corrupt a campaign.
+[*]Steam verifying files, or a game update, will undo it. Just run the tool again.
+[*]Saves made above the old limit can no longer be read by an unpatched game. That is a one-way door.
+[*]This modifies a game executable. That is your call to make, and it is why this is a manual install rather than an ordinary mod.
+[/list]
+
+[b]SOURCE AND TECHNICAL WRITEUP[/b]
+
+[url=https://github.com/A16Nights/xcom2-savefix]github.com/A16Nights/xcom2-savefix[/url]
+Includes the reverse-engineering notes on where the limit actually lives, and why the widely-repeated "mod names exceed 65535 characters" explanation is not what is happening.
+RequiresXPACK=true
+tags= war of the chosen, WotC, utility
+
