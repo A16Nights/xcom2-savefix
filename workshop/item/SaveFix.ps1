@@ -66,6 +66,32 @@ function Write-Head([string]$Text) {
     Write-Host ('-' * $Text.Length) -ForegroundColor DarkCyan
 }
 
+function Test-AccessDenied([System.Exception]$Error_) {
+    # PowerShell wraps .NET method failures, so a plain
+    # "catch [System.UnauthorizedAccessException]" would miss them. Walk the
+    # inner-exception chain instead.
+    $e = $Error_
+    $depth = 0
+    while ($e -and $depth -lt 8) {
+        if ($e -is [System.UnauthorizedAccessException]) { return $true }
+        if ($e -is [System.Security.SecurityException]) { return $true }
+        $e = $e.InnerException
+        $depth++
+    }
+    return $false
+}
+
+function Write-AdminHint {
+    Write-Host ''
+    Write-Host '  The Steam folder is normally administrator-only, because Steam' -ForegroundColor Yellow
+    Write-Host '  installs under "C:\Program Files (x86)" by default.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host '  Fix: right-click SaveFix.bat and choose "Run as administrator".' -ForegroundColor Yellow
+    Write-Host '       (SaveFix.bat also offers this automatically when it sees the error.)' -ForegroundColor Yellow
+    Write-Host '       If you run SaveFix.ps1 directly, start an administrator PowerShell first.' -ForegroundColor Yellow
+    Write-Host ''
+}
+
 function Write-Item([string]$Label, [string]$Value, [string]$Color = 'Gray') {
     Write-Host ('  {0,-12} {1}' -f ($Label + ':'), $Value) -ForegroundColor $Color
 }
@@ -497,7 +523,18 @@ function Invoke-Apply {
     # Back up first, then write, then read back and verify.
     $backup = $Target.Path + $SCRIPT:BackupExt
     if (-not (Test-Path -LiteralPath $backup)) {
-        Copy-Item -LiteralPath $Target.Path -Destination $backup -Force
+        try {
+            Copy-Item -LiteralPath $Target.Path -Destination $backup -Force
+        }
+        catch {
+            Write-Host ''
+            Write-Host '  FAILED: could not create the backup next to the executable.' -ForegroundColor Red
+            Write-Host ('          ' + $_.Exception.Message) -ForegroundColor Red
+            Write-Host '          The Steam folder is normally administrator-only. Run this as' -ForegroundColor Yellow
+            Write-Host '          administrator (right-click SaveFix.bat -> "Run as administrator"),' -ForegroundColor Yellow
+            Write-Host '          or use SaveFix.bat, which asks for it.' -ForegroundColor Yellow
+            exit 4
+        }
         Write-Item 'backup' ('created ' + $backup) 'Green'
     }
     else {
@@ -520,14 +557,20 @@ function Invoke-Apply {
     }
     catch [System.UnauthorizedAccessException] {
         Write-Host ''
-        Write-Host '  FAILED: the file is locked. Close XCOM 2 (and the Steam client is fine, but' -ForegroundColor Red
-        Write-Host '          the game itself must not be running) and try again.' -ForegroundColor Red
-        exit 3
+        Write-Host '  FAILED: access denied. The game folder is normally administrator-only' -ForegroundColor Red
+        Write-Host '          because Steam installs under "C:\Program Files (x86)".' -ForegroundColor Red
+        Write-Host ''
+        Write-Host '          Run this as administrator (right-click SaveFix.bat and choose' -ForegroundColor Yellow
+        Write-Host '          "Run as administrator"), or use SaveFix.bat, which asks for it.' -ForegroundColor Yellow
+        Write-Host '          If XCOM 2 is running, close it first.' -ForegroundColor Yellow
+        exit 4
     }
     catch [System.IO.IOException] {
         Write-Host ''
         Write-Host ('  FAILED: ' + $_.Exception.Message) -ForegroundColor Red
         Write-Host '          If XCOM 2 is running, close it first.' -ForegroundColor Red
+        Write-Host '          If the message mentions access or permission, run this as' -ForegroundColor Yellow
+        Write-Host '          administrator (the Steam folder is normally admin-only).' -ForegroundColor Yellow
         exit 3
     }
 
@@ -601,7 +644,8 @@ function Invoke-Restore {
     catch {
         Write-Host ''
         Write-Host ('  FAILED: ' + $_.Exception.Message) -ForegroundColor Red
-        Write-Host '          Close XCOM 2 if it is running.' -ForegroundColor Red
+        Write-Host '          Close XCOM 2 if it is running. If the message mentions access' -ForegroundColor Yellow
+        Write-Host '          or permission, run this as administrator.' -ForegroundColor Yellow
         exit 3
     }
 
@@ -641,6 +685,12 @@ try {
 }
 catch {
     Write-Host ''
+    if (Test-AccessDenied $_.Exception) {
+        Write-Host 'ERROR: access denied.' -ForegroundColor Red
+        Write-Host ('       ' + $_.Exception.Message) -ForegroundColor DarkGray
+        Write-AdminHint
+        exit 4
+    }
     Write-Host ('ERROR: ' + $_.Exception.Message) -ForegroundColor Red
     exit 1
 }

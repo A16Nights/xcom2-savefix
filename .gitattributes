@@ -7,6 +7,15 @@
 *.md   text eol=lf
 *.yml  text eol=lf
 
+# Batch files MUST keep CRLF in the working tree.
+# cmd.exe parses a .bat as it reads it, and with LF-only line endings a
+# `goto :label` can fail with "The system cannot find the batch label specified"
+# - the label lookup walks the byte offsets wrong. Git-normalising .bat to LF
+# breaks the launcher for everyone who clones the repository, so this rule
+# overrides `* text=auto eol=lf` above.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
 # Never touch binaries (none should be committed, but be safe)
 *.exe  binary
 *.dll  binary
