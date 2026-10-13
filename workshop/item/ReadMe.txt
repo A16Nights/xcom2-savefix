@@ -82,6 +82,10 @@ refuses to write anything.
 REQUIREMENTS AND CAVEATS
 ------------------------
 - Windows, with PowerShell 5.1 (present on any current Windows).
+- If your game is under "C:\Program Files (x86)" - the Steam default - the
+  folder is usually administrator-only, so the tool cannot read or write
+  XCom2.exe. It will say so and offer to retry elevated; say yes, or
+  right-click SaveFix.bat and choose "Run as administrator".
 - Modifies a game executable. That is your decision to make; it is why this
   is a manual install rather than an ordinary mod.
 - Antivirus software may flag any tool that writes to an .exe. The script is

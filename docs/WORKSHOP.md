@@ -96,6 +96,24 @@ first publish it was `0`: Steam assigns the real id on first publish, and the
 item's folder on disk also gets a `PublishedFileId.ID` file containing it. A
 manifest left at `0` is only correct for a brand new item.
 
+### The launcher: two things that break silently
+
+`SaveFix.bat` is the file subscribers actually double-click, and it has two
+failure modes worth recording, because both produce errors that point at the
+wrong file:
+
+* **The script path must be quoted.** `cmd.exe` parses the line before it runs
+  anything, so an unquoted `%HERE%SaveFix.ps1` inside the default Steam location
+  (`C:\Program Files (x86)\...`) has its `)` read as the end of a block. The
+  error is `\SaveFix.ps1 was unexpected at this time.` — which is why the first
+  report of this blamed `SaveFix.ps1`'s syntax, while the `.ps1` was innocent.
+* **The file must be CRLF.** `cmd.exe` reads a batch file as a stream and
+  resolves `goto :label` by byte offset. With LF-only endings the jump lands in
+  the wrong place and fails with `The system cannot find the batch label
+  specified`. Because the repository normalised everything to LF, *every* clone
+  produced a broken launcher — hence the `*.bat text eol=crlf` rule in
+  `.gitattributes`. Do not remove it.
+
 ---
 
 ## Publishing
@@ -170,6 +188,10 @@ why the id below is already the real one.
 - [ ] `ModPreview.jpg` — regenerated, 1024×1024, shows the actual fix.
 - [ ] `SaveFix.ps1` — syntax-checks clean, and `Status` / `Apply` / `Restore`
       all behave on a **copy** of the executable.
+- [ ] `SaveFix.bat` — **CRLF line endings, and its own path quoted.** Both are
+      load-bearing: an unquoted path breaks on the default Steam location
+      (`Program Files (x86)` contains `)`), and a LF-only `.bat` fails `goto`.
+      Run it from a folder whose name contains a space *and* a parenthesis.
 - [ ] `LICENSE` — present, with the copyright line filled in.
 - [ ] No game files in the folder: no `.exe`, `.dll`, `.upk`, `.bin`.
 - [ ] No BOM on any text file (Windows tooling is inconsistent about this).

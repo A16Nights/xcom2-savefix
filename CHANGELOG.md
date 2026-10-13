@@ -23,6 +23,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   two-character sequence `\n`, which is not un-escaped anywhere in the SteamCMD
   path, so the published page displayed a literal `\n` throughout instead of
   line breaks. Both copies of the page text now use real newlines.
+* **`SaveFix.bat` crashed whenever its own folder contained a `)`** — which is
+  the default Steam location, `C:\Program Files (x86)\...`. The script path was
+  expanded into the command line unquoted, so `cmd.exe` read the `)` as the end
+  of a block and reported `\SaveFix.ps1 was unexpected at this time.` The path
+  is now quoted. Reported by Skarsatal 2.0, whose own wrapper script had hidden
+  the defect.
+* **`.gitattributes` normalised `.bat` files to LF**, which breaks `goto :label`
+  in `cmd.exe` — the label lookup walks byte offsets, so a LF-only batch file
+  fails with `The system cannot find the batch label specified`. Any clone of
+  the repository produced a broken launcher. `*.bat` and `*.cmd` now carry
+  `text eol=crlf`.
+* **A denied read produced no admin hint.** `ReadAllBytes` at the top of
+  `Invoke-Apply` sat outside every typed `catch`, so on an administrator-only
+  game folder the script exited `1` with a bare message. The top-level handler
+  now walks the inner-exception chain, explains the cause, exits `4`, and the
+  batch file offers to re-run elevated.
 
 ### Added
 
@@ -32,6 +48,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   composition, name-record counts, copies-per-name histograms) and a
   *Correction history* section recording what the earlier wrong conclusion was,
   why the scan produced it, and what replaced it.
+
+### Verified
+
+* The launcher and the PowerShell tool were re-tested end to end on the real
+  executable from a path containing both a space and a parenthesis
+  (`...\Program Files (x86)\...`): `Status`, `Apply`, an idempotent second
+  `Apply`, `Restore` (back to the exact original SHA-256) and the access-denied
+  path (`exit 4` + elevation offer) all behave correctly.
+* A fresh `git clone` was checked to confirm the working-tree `SaveFix.bat`
+  really is CRLF (`bare-LF = 0`), not just the file on the machine that wrote
+  it.
 
 ## [1.0.0] — 2026-10-12
 
