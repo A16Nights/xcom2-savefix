@@ -219,7 +219,7 @@ Published as id `3818684374`, visibility public, uploaded with `steamcmd`:
 | Field | Value |
 |---|---|
 | title | `[WOTC] Savefix - Beyond 65535` |
-| file size | `153909` bytes — the sum of the six shipped files (1066 + 121113 + 3430 + 4012 + 1323 + 22965) |
+| file size | `160569` bytes — the sum of the six shipped files (1066 + 121113 + 4288 + 3220 + 25679 + 5203) |
 | creator | the uploading account, `76561198315647197` |
 | banned | `0` |
 
@@ -228,3 +228,28 @@ The file size matching the sum exactly is the check that the whole
 useful tripwire three times: `152773` on the first upload (before the real item
 id replaced the `0` placeholder), `152782` once it had, and `153909` after the
 Chinese section was added to `SaveFix.XComMod`.
+
+The current `160569` is the sum of the six shipped files, measured in the
+working tree: `1066` LICENSE + `121113` ModPreview.jpg + `4288` ReadMe.txt +
+`3220` SaveFix.bat + `25679` SaveFix.ps1 + `5203` SaveFix.XComMod.
+
+Two notes for comparing these numbers across releases.
+
+**Measure the working tree, not the repository blob.** `.gitattributes`
+normalises `.bat`/`.cmd` to LF in the repository and restores CRLF on checkout,
+so `SaveFix.bat` legitimately has two sizes — 3129 as a blob, 3220 in the
+working tree (3129 + 91 CRs). SteamCMD uploads the working tree.
+
+**The older `153909` row is correct, and it proves the launcher bug was live.**
+Its addends are `1066` LICENSE, `121113` ModPreview.jpg, `3430` ReadMe.txt,
+`4012` SaveFix.XComMod, `1323` SaveFix.bat, `22965` SaveFix.ps1 — note that
+`4012` belongs to `SaveFix.XComMod`, not to the `.bat`, whose size was `1323`.
+The sum is exact, and it is exact *only* for the LF `.bat`: substituting the
+CRLF size `1362` would give `153948`, not `153909`. So the launcher Steam was
+serving then really did carry LF-only line endings. That second defect is
+described in the CHANGELOG, but it was inferred from the repository; this
+arithmetic shows it was present in the distributed artifact.
+
+`time_updated` on the item is `1791889845` (2026-10-13 11:10:45 UTC), ~85
+seconds *after* the final repository commit `8119343` — the upload was the last
+step, not an earlier state that later landed in git.

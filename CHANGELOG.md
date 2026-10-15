@@ -40,6 +40,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   now walks the inner-exception chain, explains the cause, exits `4`, and the
   batch file offers to re-run elevated.
 
+* `docs/WORKSHOP.md`: the *What the live item actually reports* table still
+  carried the pre-fix `file size` of `153909` and stale per-file addends, while
+  the item had been re-uploaded with the launcher and admin-rights fixes. The
+  row now reads `160569`, matching what the Steam Web API reports. The addends
+  are now labelled with their filenames: the old row's bare `4012` belongs to
+  `SaveFix.XComMod`, not to `SaveFix.bat`, which is a misreading the unlabelled
+  list invites.
+
 ### Added
 
 * A Chinese section on the Workshop page, describing the problem, the one-byte
