@@ -39,6 +39,45 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   game folder the script exited `1` with a bare message. The top-level handler
   now walks the inner-exception chain, explains the cause, exits `4`, and the
   batch file offers to re-run elevated.
+* **A double-click could not act on what the report told it.** The status report
+  ended with `Run ".\SaveFix.ps1 Apply" to raise the limit to 4 MiB.` — a
+  PowerShell invocation, printed to someone who reached the tool by
+  double-clicking a `.bat` and therefore has no console to type it into.
+  Double-clicking `SaveFix.ps1` opens Notepad instead of running it, and a
+  double-click cannot pass an argument to the launcher either. The report knew
+  the executable was patchable and offered no way to patch it. Reported by
+  Anakameron ("Am I just really stupid? I need someone to explain it like I'm a
+  five year old").
+
+  `SaveFix.bat` now asks the question itself. With **no argument at all** it runs
+  the report and, if the executable is unpatched, prints
+
+  ```
+    The original 65,536-byte limit is still in place.
+
+    Raise it to 4 MiB now? [y/N]
+  ```
+
+  and on `y` re-invokes the script with `Apply -Yes`, so the confirmation is not
+  requested twice. **Any** argument skips the question, so every documented
+  command and every scripted caller behaves exactly as before.
+
+  This needed a way for the report to say "nothing went wrong, and there is
+  something to do" without claiming an error, so `Invoke-Status` now exits **10**
+  when it finds a patchable vanilla executable. A status run against an
+  already-patched executable still exits `0`; `10` is not an error.
+
+  Elevation is now split into three entry points (`:denied_status`,
+  `:denied_apply`, `:denied_args`) instead of one shared `:denied`, so that an
+  elevated retry re-runs *exactly what the user asked for*: an elevated
+  double-click retries the report-then-offer, an elevated `Apply` retries
+  `Apply -Yes`, and an elevated `SaveFix.bat Apply -MiB 8` retries those same
+  arguments. Nothing is ever escalated beyond the original request.
+* **The `Apply` confirmation printed the same bytes on both sides of the
+  arrow.** `SaveFix.ps1` formatted `{0}` and `{1}` from the same expression, so
+  the prompt read `About to change 81 7d 38 00 00 01 00 -> 81 7d 38 00 00 01 00`.
+  It now shows the immediate operand that is actually about to change:
+  `81 7d 38 00 00 01 00 -> 81 7d 38 00 00 40 00`.
 
 * `docs/WORKSHOP.md`: the *What the live item actually reports* table still
   carried the pre-fix `file size` of `153909` and stale per-file addends, while

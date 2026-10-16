@@ -100,6 +100,12 @@ powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Status
 powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Apply
 ```
 
+`workshop/item/SaveFix.bat` is a double-click launcher around that script. With
+no argument it runs the report and then offers to apply the patch itself, so
+the tool is usable without ever opening a console window; with any argument it
+passes straight through. It also retries the same operation elevated when
+Windows denies access to the game folder.
+
 **Python 3.8+** — standard library only, no `pip install`:
 
 ```console

@@ -30,7 +30,8 @@ The game does not load this. It cannot be enabled or disabled in the launcher, a
 [code]<your Steam library>\\steamapps\\workshop\\content\\268500\\[i]<this item's ID>[/i][/code]
 The ID is in this page's URL.
 [*]4. Run [b]SaveFix.bat[/b] in that folder.
-[*]5. Read what it prints. If it says ORIGINAL, run [code]SaveFix.bat Apply[/code].
+[*]5. Read what it prints. If it says ORIGINAL it then asks "Raise it to 4 MiB now? [y/N]" - type [b]y[/b]. That is the whole patch: one double-click and one keypress, no command line needed.
+[*]Want a different limit, or scripting it? Pass an argument instead - [code]SaveFix.bat Apply -MiB 8[/code], [code]SaveFix.bat Restore[/code]. Any argument skips the question.
 [/list]
 
 [b]UNDOING IT[/b]
@@ -70,8 +71,9 @@ Includes the reverse-engineering notes on where the limit actually lives, and me
 [list]
 [*]订阅本条目。
 [*]找到条目所在文件夹：在 Steam 里右键 XCOM 2 -> 管理 -> 浏览本地文件，然后往上回到 steamapps/workshop/content/268500/[i]<本条目 ID>[/i]。
-[*]双击 [b]SaveFix.bat[/b]，它会先报告当前状态。要打补丁就运行 [code]SaveFix.bat Apply[/code]。
-[*]想还原就再运行一次并选 Restore。原版可执行文件会在第一次修改前自动备份在旁边。
+[*]双击 [b]SaveFix.bat[/b]：它先报告当前状态；如果还没打过补丁，它会问「Raise it to 4 MiB now? [y/N]」，输入 [b]y[/b] 回车即可。整个过程就是一次双击加一个按键，不需要命令行。
+[*]想换上限或写脚本，就直接带参数运行：[code]SaveFix.bat Apply -MiB 8[/code]、[code]SaveFix.bat Restore[/code]。只要带了参数就不会再问。
+[*]想还原就运行 [code]SaveFix.bat Restore[/code]。原版可执行文件会在第一次修改前自动备份在旁边。
 [/list]
 
 工具不写死地址：它靠字节签名定位，确认只命中一处才动手，命中数不对就拒绝写入。基础版和天选者之战都支持。Steam 的「验证游戏文件完整性」会把补丁抹掉，重新运行一次 Apply 即可。

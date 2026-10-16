@@ -462,7 +462,10 @@ function Invoke-Status {
 
     if ($site.Found -and $site.State -eq 'vanilla') {
         Write-Host ''
-        Write-Host '  Run ".\SaveFix.ps1 Apply" to raise the limit to 4 MiB.' -ForegroundColor Yellow
+        Write-Host '  This executable can be patched - run "SaveFix.bat Apply" to do it.' -ForegroundColor Yellow
+        # A distinct code so a launcher can tell "nothing to do" from "there is
+        # something to do". Not an error: nothing went wrong and nothing changed.
+        exit 10
     }
     elseif ($site.Found) {
         Write-Host ''
@@ -512,7 +515,7 @@ function Invoke-Apply {
 
     if (-not $Yes) {
         Write-Host ''
-        Write-Host ('  About to change 81 7d 38 {0} -> 81 7d 38 {1}' -f (Format-Bytes $site.Bytes[0..2]), (Format-Bytes $site.Bytes[0..2])) -ForegroundColor White
+        Write-Host ('  About to change 81 7d 38 {0} -> 81 7d 38 {1}' -f (Format-Bytes $site.Bytes[3..6]), (Format-Bytes ([System.BitConverter]::GetBytes($newImm)[0..3]))) -ForegroundColor White
         $answer = Read-Host '  Proceed? [y/N]'
         if ($answer -notmatch '^(y|yes)$') {
             Write-Host '  Cancelled.' -ForegroundColor DarkGray

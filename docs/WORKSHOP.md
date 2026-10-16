@@ -114,6 +114,50 @@ wrong file:
   produced a broken launcher — hence the `*.bat text eol=crlf` rule in
   `.gitattributes`. Do not remove it.
 
+### The launcher: a third failure that was not a crash
+
+The two bugs above make the launcher fall over. The third one only made it
+useless, which is why it survived longer: **the report told double-click users
+to run a command they had no way to run.**
+
+The old report ended with `Run ".\SaveFix.ps1 Apply" to raise the limit to
+4 MiB.` For someone who got there by double-clicking, that instruction is a
+dead end. They have no console window to type into. Double-clicking
+`SaveFix.ps1` itself opens Notepad, not PowerShell. And `SaveFix.bat` could not
+have taken an argument even if they had a window, because a double-click passes
+none. The result was a report that correctly said "this executable can be
+patched" and then withheld the means to patch it — one user's words were "Am I
+just really stupid? I need someone to explain it like I'm a five year old."
+
+The fix turns the dead end into a question. With **no argument at all**,
+`SaveFix.bat` runs the report and then asks:
+
+```
+  The original 65,536-byte limit is still in place.
+
+  Raise it to 4 MiB now? [y/N]
+```
+
+Answering `y` re-invokes the script with `Apply -Yes`, so the confirmation the
+user just gave is not asked for twice. **Passing any argument skips the
+question entirely**, so every documented command, and every scripted caller,
+behaves exactly as before.
+
+That "did the caller pass anything?" test is `if not "%~1"=="" goto :have_args`
+— a label jump, not an `if (...)` block, for the parenthesis reason above.
+
+The report needed a way to say "I ran fine, and there is something to do"
+without calling it an error. It exits **10** for that case; a status run against
+an already-patched executable still exits 0. The launcher maps 10 to its offer
+branch and everything else to its report branch.
+
+Elevation now has three separate entry points (`:denied_status`,
+`:denied_apply`, `:denied_args`) instead of one shared `:denied`, precisely so
+that an elevated retry re-runs *the same thing the user asked for* and nothing
+more — an elevated double-click retries the status and offer, an elevated
+`Apply` retries `Apply -Yes`, and an elevated `SaveFix.bat Apply -MiB 8`
+retries exactly those arguments.
+
 ---
 
 ## Publishing
@@ -219,26 +263,27 @@ Published as id `3818684374`, visibility public, uploaded with `steamcmd`:
 | Field | Value |
 |---|---|
 | title | `[WOTC] Savefix - Beyond 65535` |
-| file size | `160569` bytes — the sum of the six shipped files (1066 + 121113 + 4288 + 3220 + 25679 + 5203) |
+| file size | `164834` bytes — the sum of the six shipped files (1066 + 121113 + 4678 + 6295 + 25900 + 5782) |
 | creator | the uploading account, `76561198315647197` |
 | banned | `0` |
 
 The file size matching the sum exactly is the check that the whole
 `contentfolder` made it up, and that nothing extra went with it. It has been a
-useful tripwire three times: `152773` on the first upload (before the real item
-id replaced the `0` placeholder), `152782` once it had, and `153909` after the
-Chinese section was added to `SaveFix.XComMod`.
+useful tripwire four times: `152773` on the first upload (before the real item
+id replaced the `0` placeholder), `152782` once it had, `153909` after the
+Chinese section was added to `SaveFix.XComMod`, and `164834` for the release
+that taught a plain double-click to offer the patch.
 
-The current `160569` is the sum of the six shipped files, measured in the
-working tree: `1066` LICENSE + `121113` ModPreview.jpg + `4288` ReadMe.txt +
-`3220` SaveFix.bat + `25679` SaveFix.ps1 + `5203` SaveFix.XComMod.
+The current `164834` is the sum of the six shipped files, measured in the
+working tree: `1066` LICENSE + `121113` ModPreview.jpg + `4678` ReadMe.txt +
+`6295` SaveFix.bat + `25900` SaveFix.ps1 + `5782` SaveFix.XComMod.
 
 Two notes for comparing these numbers across releases.
 
 **Measure the working tree, not the repository blob.** `.gitattributes`
 normalises `.bat`/`.cmd` to LF in the repository and restores CRLF on checkout,
-so `SaveFix.bat` legitimately has two sizes — 3129 as a blob, 3220 in the
-working tree (3129 + 91 CRs). SteamCMD uploads the working tree.
+so `SaveFix.bat` legitimately has two sizes — `6121` as a blob, `6295` in the
+working tree (`6121` + `174` CRs). SteamCMD uploads the working tree.
 
 **The older `153909` row is correct, and it proves the launcher bug was live.**
 Its addends are `1066` LICENSE, `121113` ModPreview.jpg, `3430` ReadMe.txt,

@@ -55,8 +55,9 @@ That is a single byte of XCom2.exe. Save files are never modified, rewritten or 
 [list]
 [*] Subscribe to this item.
 [*] Locate this item folder: right-click XCOM 2 in Steam, Manage, Browse local files, then go up to steamapps/workshop/content/268500/3818684374.
-[*] Double-click [b]SaveFix.bat[/b]. It reports what it finds. To patch, run [b]Apply[/b].
-[*] To undo, run SaveFix.bat again and choose [b]Restore[/b]. A backup of your original executable is kept next to it.
+[*] Double-click [b]SaveFix.bat[/b]. It reports what it finds, and if the executable is still original it asks "Raise it to 4 MiB now? [y/N]" - type [b]y[/b]. That is the whole patch: one double-click and one keypress, no command line needed.
+[*] Want a different limit, or scripting it? Pass an argument instead - [b]SaveFix.bat Apply -MiB 8[/b], [b]SaveFix.bat Restore[/b]. Any argument skips the question.
+[*] To undo, run [b]SaveFix.bat Restore[/b]. A backup of your original executable is kept next to it.
 [/list]
 The tool does not hardcode addresses: it locates the site by a byte signature, verifies the match is unique, and refuses to write if it is not. Both the base game and War of the Chosen are supported. Steam's Verify Integrity will undo the patch; just run Apply again.
 
@@ -85,8 +86,9 @@ Source, technical write-up and bug tracker:
 [list]
 [*] 订阅本条目。
 [*] 找到条目所在文件夹：在 Steam 里右键 XCOM 2 → 管理 → 浏览本地文件，然后往上回到 steamapps/workshop/content/268500/3818684374。
-[*] 双击 [b]SaveFix.bat[/b]，它会先报告当前状态。要打补丁就运行 [b]Apply[/b]。
-[*] 想还原就再运行一次 SaveFix.bat 并选 [b]Restore[/b]。原版可执行文件会在第一次修改前自动备份在旁边。
+[*] 双击 [b]SaveFix.bat[/b]：它先报告当前状态；如果还没打过补丁，它会问「Raise it to 4 MiB now? [y/N]」，输入 [b]y[/b] 回车即可。整个过程就是一次双击加一个按键，不需要命令行。
+[*] 想换上限或写脚本，就直接带参数运行：[b]SaveFix.bat Apply -MiB 8[/b]、[b]SaveFix.bat Restore[/b]。只要带了参数就不会再问。
+[*] 想还原就运行 [b]SaveFix.bat Restore[/b]。原版可执行文件会在第一次修改前自动备份在旁边。
 [/list]
 工具不写死地址：它靠字节签名定位，确认只命中一处才动手，命中数不对就拒绝写入。基础版和天选者之战都支持。Steam 的「验证游戏文件完整性」会把补丁抹掉，重新运行一次 Apply 即可。
 
@@ -94,5 +96,5 @@ Source, technical write-up and bug tracker:
 
 源码、技术分析与问题反馈：
 [url=https://github.com/A16Nights/xcom2-savefix]https://github.com/A16Nights/xcom2-savefix[/url]"
-	"changenote"		"Fixed the description's line breaks and added a Chinese section."
+	"changenote"		"A plain double-click now offers to apply the patch instead of telling you to run a PowerShell command you have nowhere to type. Also fixes the Apply confirmation, which printed the same bytes on both sides of the arrow."
 }

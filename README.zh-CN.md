@@ -89,6 +89,8 @@ powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Status
 powershell -ExecutionPolicy Bypass -File tools\SaveFix.ps1 Apply
 ```
 
+`workshop/item/SaveFix.bat` 是围绕该脚本的双击启动器。**不带任何参数**时，它先跑一次只读报告，然后自己问你要不要打补丁——因此完全不需要打开命令行窗口；**带上任何参数**时它原样转发。当 Windows 拒绝访问游戏目录时，它会用同样的操作请求管理员权限重试。
+
 **Python 3.8+ 版**——**仅用标准库**，无需 `pip install`：
 
 ```console

@@ -30,17 +30,22 @@ QUICK START
 -----------
 1. Close XCOM 2. (It locks the executable while the game is running.)
 2. Open this folder (where Steam downloaded this item).
-3. Run  SaveFix.bat
+3. Double-click  SaveFix.bat
       -> read-only report. It tells you whether your executable is original
          or already patched, and what the current limit is.
-4. If it says ORIGINAL, run:  SaveFix.bat Apply
-      -> raises the limit to 4 MiB. One byte of XCom2.exe changes.
+4. If it says ORIGINAL it then asks:
+         Raise it to 4 MiB now? [y/N]
+   Type  y  and press Enter. One byte of XCom2.exe changes.
 5. Start the game and load the save that used to be red.
+
+Steps 3 and 4 are one double-click and one keystroke. You do not need a
+command prompt. If you want a different limit, or to script the tool, use the
+commands below instead - passing any argument skips the question.
 
 
 COMMANDS
 --------
-    SaveFix.bat                     report only, changes nothing
+    SaveFix.bat                     report, then offer to patch (double-click this)
     SaveFix.bat Apply               raise the limit to 4 MiB (default)
     SaveFix.bat Apply -MiB 8        raise it to 8 MiB instead
     SaveFix.bat Restore             put the original executable back
@@ -49,6 +54,9 @@ Options:
 
     -Exe "<path>"    use a specific XCom2.exe (auto-detected otherwise)
     -Yes             skip the confirmation prompt
+
+The first line is what a double-click does. Any argument at all skips the
+question and behaves exactly as documented above.
 
 
 UNDOING IT
