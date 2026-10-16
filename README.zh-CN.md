@@ -164,6 +164,7 @@ python tools/xcom2_savefix.py apply 8 --dry-run
 tools/xcom2_savefix.py    补丁工具，Python 版（status / apply / restore / saves）
 tools/pe_util.py          零依赖的 PE 读取器与字节模式扫描器
 tools/SaveFix.ps1         同一个补丁工具的 PowerShell 版，不需要 Python
+tools/check_vdf.py        工坊上传配置文件的离线校验器
 workshop/item/            订阅者实际拿到的全部文件：清单、说明、启动器、工具、预览图
 workshop/workshop_build.vdf  上传该目录的 SteamCMD 配置
 workshop/make_preview.py  重新生成 ModPreview.jpg（需要 Pillow）

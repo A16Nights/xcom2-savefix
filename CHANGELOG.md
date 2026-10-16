@@ -79,16 +79,37 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   It now shows the immediate operand that is actually about to change:
   `81 7d 38 00 00 01 00 -> 81 7d 38 00 00 40 00`.
 
-* `docs/WORKSHOP.md`: the *What the live item actually reports* table still
-  carried the pre-fix `file size` of `153909` and stale per-file addends, while
-  the item had been re-uploaded with the launcher and admin-rights fixes. The
-  row now reads `160569`, matching what the Steam Web API reports. The addends
-  are now labelled with their filenames: the old row's bare `4012` belongs to
-  `SaveFix.XComMod`, not to `SaveFix.bat`, which is a misreading the unlabelled
-  list invites.
+* **A bare double quote in the Workshop description closed the string early**,
+  so `steamcmd` read the rest of the page text as a key name and refused the
+  build with `Bad expression token: y at 1 in y/N]` and
+  `Assertion Failed: key name too long (3450 chars)`. The offending text quoted
+  the launcher's own prompt in plain quotes - `it asks "Raise it to 4 MiB now?
+  [y/N]"` - and KeyValues has no escape for `"` inside a hand-written value. It
+  now uses BBCode `[i]` italics. Neither SteamCMD message mentions a quote, and
+  the second one describes the symptom (a 3450-character key) rather than the
+  cause, which is a single character tens of lines earlier. Stated as a rule in
+  `docs/WORKSHOP.md`: **never put a bare `"` in a description value.**
+
+* `docs/WORKSHOP.md`: the *What the live item actually reports* table carried a
+  pre-fix `file size` of `153909` and stale per-file addends. It now reads
+  `164834`, matching what the Steam Web API reports for the current upload. The
+  addends are labelled with their filenames: the old row's bare `4012` belongs
+  to `SaveFix.XComMod`, not to `SaveFix.bat`, which is a misreading the
+  unlabelled list invites. The tripwire history was also incomplete - it listed
+  three sizes where five uploads had been measured (`152773`, `152782`,
+  `153909`, `160569`, `164834`); the `160569` entry, the launcher and
+  admin-rights fixes, had been dropped when the row above it was rewritten.
 
 ### Added
 
+* `tools/check_vdf.py` — offline validator for `workshop_build.vdf`. It walks
+  Valve's KeyValues grammar (quoted tokens, nested `{ }` blocks, `//` comments)
+  and reports the first thing that would stop the real parser, plus a targeted
+  check of the `description` value: bare double quotes, bare braces, real
+  newlines and literal `\n`. Written after the quote failure above, because the
+  authoritative parser can only be consulted by *attempting an upload*, and its
+  error messages name the wrong thing. Exits `0` on a clean file. Also recorded
+  in the pre-publish checklist, to be run before every upload.
 * A Chinese section on the Workshop page, describing the problem, the one-byte
   change, and the usage steps.
 * `docs/TECHNICAL.md` § 1 now carries the per-save measurements (header

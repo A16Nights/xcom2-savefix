@@ -190,6 +190,7 @@ zero or multiple matches, rather than guessing.
 tools/xcom2_savefix.py    the patch tool, Python (status / apply / restore / saves)
 tools/pe_util.py          dependency-free PE reader and byte-pattern scanner
 tools/SaveFix.ps1         the same patch tool in PowerShell, no Python needed
+tools/check_vdf.py        offline validator for the Workshop build file
 workshop/item/            exactly what subscribers receive: manifest, ReadMe,
                           launcher, tool and preview image
 workshop/workshop_build.vdf  SteamCMD upload config for that folder

@@ -96,6 +96,54 @@ first publish it was `0`: Steam assigns the real id on first publish, and the
 item's folder on disk also gets a `PublishedFileId.ID` file containing it. A
 manifest left at `0` is only correct for a brand new item.
 
+### A quote inside the description closes it early
+
+KeyValues delimit strings with plain `"`, and there is no escape for it *inside
+a value written by hand*. So an ASCII double quote anywhere in the description
+ends the string there. Everything after it is then read as key/value pairs,
+which produces an error that names the wrong thing.
+
+This happened on a real upload. The description quoted the launcher's own
+prompt, in plain quotes:
+
+    it asks "Raise it to 4 MiB now? [y/N]"
+
+and `steamcmd` refused the file with two messages:
+
+    Bad expression token: y at 1 in y/N]
+    Assertion Failed: CKeyValuesSystem::AddStringToPool: key name too long (3450 chars)
+
+The second message is the informative one: the remainder of the description was
+being parsed as a **key name**, which is why it was 3450 characters long. The
+first message stops at the space inside `y/N]` and says nothing about quotes.
+Neither error points at the actual defect, which is a single character tens of
+lines earlier.
+
+The fix is to not use a bare `"` in a description at all: the launcher's prompt
+is written in `[i]` BBCode instead, and the Chinese section already used full
+width quotes. Two useful habits follow:
+
+* **Write prominent quoted text in BBCode or full-width quotes**, so the
+  description value never contains a bare `"`.
+* **Validate the `.vdf` offline before uploading**, because the authoritative
+  parser only tells you after a failed attempt. `tools/check_vdf.py` walks the
+  same grammar: it parses quoted tokens and nested `{ }` blocks, reports the
+  first thing that would stop Valve's parser, and flags a key name over 200
+  characters as the mis-read-value symptom it is. Run it with no argument to
+  check the `.vdf` in this repository:
+
+      python tools/check_vdf.py
+
+  A clean file exits `0`. It is also worth reading its *description value
+  checks* block, which counts bare double quotes, bare braces, real newlines
+  and literal `\n` in the description specifically - the last two are how the
+  earlier newline bug was caught.
+
+The same rule bites in the reverse direction: a description that is *entirely*
+valid can still be wrong, because nothing in this path un-escapes anything. Both
+failures come from the same place - treating a KeyValues value as if it were a
+programming-language string literal, where quoting and escaping are normal.
+
 ### The launcher: two things that break silently
 
 `SaveFix.bat` is the file subscribers actually double-click, and it has two
@@ -229,6 +277,10 @@ why the id below is already the real one.
 
 - [ ] `SaveFix.XComMod` — title, description, tags present; real newlines.
 - [ ] `workshop_build.vdf` — `description` uses real newlines too; keys intact.
+- [ ] `python tools/check_vdf.py` — exits `0`. Run it before every upload: the
+      SteamCMD parser only reports problems after a failed attempt, and its
+      message names the wrong thing (see *A quote inside the description closes
+      it early* above).
 - [ ] `ModPreview.jpg` — regenerated, 1024×1024, shows the actual fix.
 - [ ] `SaveFix.ps1` — syntax-checks clean, and `Status` / `Apply` / `Restore`
       all behave on a **copy** of the executable.
@@ -269,10 +321,11 @@ Published as id `3818684374`, visibility public, uploaded with `steamcmd`:
 
 The file size matching the sum exactly is the check that the whole
 `contentfolder` made it up, and that nothing extra went with it. It has been a
-useful tripwire four times: `152773` on the first upload (before the real item
+useful tripwire five times: `152773` on the first upload (before the real item
 id replaced the `0` placeholder), `152782` once it had, `153909` after the
-Chinese section was added to `SaveFix.XComMod`, and `164834` for the release
-that taught a plain double-click to offer the patch.
+Chinese section was added to `SaveFix.XComMod`, `160569` for the launcher and
+admin-rights fixes, and `164834` for the release that taught a plain
+double-click to offer the patch.
 
 The current `164834` is the sum of the six shipped files, measured in the
 working tree: `1066` LICENSE + `121113` ModPreview.jpg + `4678` ReadMe.txt +
